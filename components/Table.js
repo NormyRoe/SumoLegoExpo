@@ -2,7 +2,7 @@ import * as React from "react";
 import { StyleProp, ViewStyle, Text, StyleSheet, View } from "react-native";
 import { Color, FontSize, Border } from "../GlobalStyles";
 
-const Table = ({ style }) => {
+const Table2 = ({ style }) => {
   return <View style={[styles.displayLeaderboardTableFram, style]} />;
 };
 
@@ -49,4 +49,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Table;
+export default Table2;

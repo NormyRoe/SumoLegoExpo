@@ -1,10 +1,10 @@
 import * as React from "react";
-import { StyleProp, ViewStyle, Text, StyleSheet, View } from "react-native";
+import { Text, StyleSheet, View } from "react-native";
 import { FontSize, FontFamily, Color, Padding } from "../GlobalStyles";
 
-const Row23 = ({ style }) => {
+const Row23 = () => {
   return (
-    <View style={[styles.row, style, styles.rowFlexBox]}>
+    <View style={[styles.row, styles.rowFlexBox]}>
       <View style={styles.cell}>
         <View style={[styles.content, styles.rowFlexBox]}>
           <Text style={styles.text}>Name</Text>

@@ -2,7 +2,7 @@ import * as React from "react";
 import { StyleProp, ViewStyle, Text, StyleSheet, View } from "react-native";
 import { Color, FontSize, FontFamily, Padding } from "../GlobalStyles";
 
-const Row21 = ({ style }) => {
+const Row211 = ({ style }) => {
   return (
     <View style={[styles.row, style, styles.rowFlexBox]}>
       <View style={[styles.cell, styles.rowBg]}>
@@ -60,4 +60,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Row21;
+export default Row211;
