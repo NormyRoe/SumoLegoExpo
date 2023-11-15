@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Text, StyleSheet, FlatList, View, Pressable } from "react-native";
 import Row43 from "../components/Row43";
 import Row42 from "../components/Row42";
-import Row41 from "../components/Row41";
+import Row411 from "../components/Row41";
 import Row44 from "../components/Row441";
 import Row40 from "../components/Row40";
 import Row39 from "../components/Row39";
@@ -16,7 +16,7 @@ const JudgeGameDraw = () => {
     useState([
       <Row43 />,
       <Row42 />,
-      <Row41 />,
+      <Row411 />,
       <Row44 />,
       <Row40 />,
       <Row39 />,

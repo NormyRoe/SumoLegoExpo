@@ -5,20 +5,28 @@ import { useFonts } from "expo-font";
 import Login from "./screens/Login";
 import DisplayGameDrawTable from "./components/DisplayGameDrawTable";
 import DisplayGameDraw from "./screens/DisplayGameDraw";
-import Table from "./components/Table";
-import DisplayLeaderboard from "./screens/DisplayLeaderboard";
 import Row from "./components/Row";
 import Row1 from "./components/Row1";
 import Row2 from "./components/Row2";
 import Row3 from "./components/Row3";
+import Row23 from "./components/Row23";
+import DisplayLeaderboard from "./screens/DisplayLeaderboard";
 import Row4 from "./components/Row4";
-import Row5 from "./components/Row5";
+import Table from "./components/Table";
+import Table1 from "./components/Table1";
+import Table2 from "./components/Table";
+import Row5 from "./components/Row";
+import Row11 from "./components/Row1";
+import Row21 from "./components/Row2";
+import Row31 from "./components/Row3";
+import Row41 from "./components/Row4";
+import Row51 from "./components/Row5";
 import Row6 from "./components/Row6";
 import Row7 from "./components/Row7";
 import Row8 from "./components/Row8";
 import Row9 from "./components/Row9";
 import Row10 from "./components/Row10";
-import Row11 from "./components/Row11";
+import Row111 from "./components/Row11";
 import Row12 from "./components/Row12";
 import Row13 from "./components/Row13";
 import Row14 from "./components/Row14";
@@ -28,9 +36,8 @@ import Row17 from "./components/Row17";
 import Row18 from "./components/Row18";
 import Row19 from "./components/Row19";
 import Row20 from "./components/Row20";
-import Row21 from "./components/Row21";
+import Row211 from "./components/Row21";
 import Row22 from "./components/Row22";
-import Row23 from "./components/Row23";
 import Row24 from "./components/Row24";
 import Row25 from "./components/Row25";
 import Row26 from "./components/Row26";
@@ -38,7 +45,7 @@ import Row27 from "./components/Row27";
 import Row28 from "./components/Row28";
 import Row29 from "./components/Row29";
 import Row30 from "./components/Row30";
-import Row31 from "./components/Row31";
+import Row311 from "./components/Row31";
 import Row32 from "./components/Row32";
 import Row33 from "./components/Row33";
 import Row34 from "./components/Row34";
@@ -49,16 +56,16 @@ import Row38 from "./components/Row38";
 import Row39 from "./components/Row39";
 import Row40 from "./components/Row40";
 import Row44 from "./components/Row441";
-import Row41 from "./components/Row41";
+import Row411 from "./components/Row41";
 import Row42 from "./components/Row42";
 import Row43 from "./components/Row43";
-import Row451 from "./components/Row45";
+import Row451 from "./components/Row451";
 import Row46 from "./components/Row46";
 import Row47 from "./components/Row47";
 import Row48 from "./components/Row48";
 import Row49 from "./components/Row49";
 import Row50 from "./components/Row50";
-import Row51 from "./components/Row51";
+import Row511 from "./components/Row51";
 import AdminMenu from "./components/AdminMenu";
 import DefaultTabLeftGroup from "./screens/DefaultTabLeftGroup";
 import DropdownMenu from "./components/DropdownMenu";
@@ -122,16 +129,6 @@ const App = () => {
               options={{ headerShown: false }}
             />
             <Stack.Screen
-              name="Table"
-              component={Table}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="DisplayLeaderboard"
-              component={DisplayLeaderboard}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
               name="Row"
               component={Row}
               options={{ headerShown: false }}
@@ -152,13 +149,58 @@ const App = () => {
               options={{ headerShown: false }}
             />
             <Stack.Screen
+              name="DisplayLeaderboard"
+              component={DisplayLeaderboard}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
               name="Row4"
               component={Row4}
               options={{ headerShown: false }}
             />
             <Stack.Screen
+              name="Table"
+              component={Table}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Table1"
+              component={Table1}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Table2"
+              component={Table2}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
               name="Row5"
               component={Row5}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Row11"
+              component={Row11}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Row21"
+              component={Row21}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Row31"
+              component={Row31}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Row41"
+              component={Row41}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Row51"
+              component={Row51}
               options={{ headerShown: false }}
             />
             <Stack.Screen
@@ -187,8 +229,8 @@ const App = () => {
               options={{ headerShown: false }}
             />
             <Stack.Screen
-              name="Row11"
-              component={Row11}
+              name="Row111"
+              component={Row111}
               options={{ headerShown: false }}
             />
             <Stack.Screen
@@ -237,18 +279,13 @@ const App = () => {
               options={{ headerShown: false }}
             />
             <Stack.Screen
-              name="Row21"
-              component={Row21}
+              name="Row211"
+              component={Row211}
               options={{ headerShown: false }}
             />
             <Stack.Screen
               name="Row22"
               component={Row22}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="Row23"
-              component={Row23}
               options={{ headerShown: false }}
             />
             <Stack.Screen
@@ -287,8 +324,8 @@ const App = () => {
               options={{ headerShown: false }}
             />
             <Stack.Screen
-              name="Row31"
-              component={Row31}
+              name="Row311"
+              component={Row311}
               options={{ headerShown: false }}
             />
             <Stack.Screen
@@ -342,8 +379,8 @@ const App = () => {
               options={{ headerShown: false }}
             />
             <Stack.Screen
-              name="Row41"
-              component={Row41}
+              name="Row411"
+              component={Row411}
               options={{ headerShown: false }}
             />
             <Stack.Screen

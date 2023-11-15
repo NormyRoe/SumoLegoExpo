@@ -5,7 +5,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import Row34 from "../components/Row34";
 import Row33 from "../components/Row33";
 import Row32 from "../components/Row32";
-import Row31 from "../components/Row31";
+import Row311 from "../components/Row31";
 import Row30 from "../components/Row30";
 import Row29 from "../components/Row29";
 import { LinearGradient } from "expo-linear-gradient";
@@ -34,7 +34,7 @@ const AdminLeaderboard = () => {
     <Row34 />,
     <Row33 />,
     <Row32 />,
-    <Row31 />,
+    <Row311 />,
     <Row30 />,
     <Row29 />,
   ]);

@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import { Text, StyleSheet, Pressable, View, FlatList } from "react-native";
-import Table from "../components/Table";
+import Row3 from "../components/Row3";
+import Row2 from "../components/Row2";
+import Row1 from "../components/Row1";
+import Row4 from "../components/Row4";
+import Row from "../components/Row";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { FontFamily, FontSize, Color, Border, Padding } from "../GlobalStyles";
 
 const DisplayLeaderboard = () => {
-  const [displayLeaderboardTableFramData, setDisplayLeaderboardTableFramData] =
-    useState([<Table />]);
+  const [adminTeamsTableFlatListData, setAdminTeamsTableFlatListData] =
+    useState([<Row3 />, <Row2 />, <Row1 />, <Row4 />, <Row />]);
   const navigation = useNavigation();
 
   return (
@@ -21,9 +25,7 @@ const DisplayLeaderboard = () => {
         "rgba(0, 70, 255, 0.78)",
       ]}
     >
-      <View
-        style={[styles.displayLeaderboardInsideFra, styles.frameParentFlexBox1]}
-      >
+      <View style={styles.displayLeaderboardInsideFra}>
         <Text style={styles.displayLeaderboardTitle} numberOfLines={1}>
           Leaderboard
         </Text>
@@ -42,9 +44,7 @@ const DisplayLeaderboard = () => {
                 >
                   <View style={[styles.activeTab, styles.tabFlexBox]}>
                     <View style={styles.resize}>
-                      <View
-                        style={[styles.textBorder, styles.textBorderBorder]}
-                      >
+                      <View style={styles.textBorder}>
                         <Text style={[styles.tabLabel, styles.tabTypo]}>
                           Tab 1
                         </Text>
@@ -64,9 +64,7 @@ const DisplayLeaderboard = () => {
                 >
                   <View style={[styles.activeTab, styles.tabFlexBox]}>
                     <View style={styles.resize}>
-                      <View
-                        style={[styles.textBorder, styles.textBorderBorder]}
-                      >
+                      <View style={styles.textBorder}>
                         <Text style={[styles.tabLabel, styles.tabTypo]}>
                           Tab 2
                         </Text>
@@ -86,9 +84,7 @@ const DisplayLeaderboard = () => {
                 >
                   <View style={[styles.activeTab, styles.tabFlexBox]}>
                     <View style={styles.resize}>
-                      <View
-                        style={[styles.textBorder, styles.textBorderBorder]}
-                      >
+                      <View style={styles.textBorder}>
                         <Text style={[styles.tabLabel, styles.tabTypo]}>
                           Tab 3
                         </Text>
@@ -108,9 +104,7 @@ const DisplayLeaderboard = () => {
                 >
                   <View style={[styles.activeTab, styles.tabFlexBox]}>
                     <View style={styles.resize}>
-                      <View
-                        style={[styles.textBorder, styles.textBorderBorder]}
-                      >
+                      <View style={styles.textBorder}>
                         <Text style={[styles.tabLabel, styles.tabTypo]}>
                           Tab 4
                         </Text>
@@ -140,7 +134,7 @@ const DisplayLeaderboard = () => {
               <Pressable
                 style={[
                   styles.displayLeaderboardGameDraw,
-                  styles.displayLayout,
+                  styles.adminTeamsTableBorder,
                 ]}
                 onPress={() => navigation.navigate("DisplayGameDraw")}
               >
@@ -156,28 +150,26 @@ const DisplayLeaderboard = () => {
             </View>
           </View>
         </View>
-        <FlatList
-          style={[styles.displayLeaderboardTableFram, styles.displayLayout]}
-          data={displayLeaderboardTableFramData}
-          renderItem={({ item }) => item}
-          contentContainerStyle={styles.displayLeaderboardTableFramContent}
-        />
+        <View style={styles.adminTeamsTableFrame}>
+          <FlatList
+            style={[styles.adminTeamsTable, styles.adminTeamsTableBorder]}
+            data={adminTeamsTableFlatListData}
+            renderItem={({ item }) => item}
+            contentContainerStyle={styles.adminTeamsTableFlatListContent}
+          />
+        </View>
       </View>
     </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  displayLeaderboardTableFramContent: {
+  adminTeamsTableFlatListContent: {
     flexDirection: "column",
   },
   tab1FlexBox: {
     flexDirection: "row",
     flex: 1,
-  },
-  frameParentFlexBox1: {
-    flex: 1,
-    alignSelf: "stretch",
   },
   frameParentFlexBox: {
     justifyContent: "space-between",
@@ -192,10 +184,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     flexDirection: "row",
   },
-  textBorderBorder: {
-    borderStyle: "solid",
-    alignItems: "center",
-  },
   tabTypo: {
     fontFamily: FontFamily.interRegular,
     lineHeight: 28,
@@ -207,8 +195,9 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.interRegular,
     color: Color.colorBlack,
   },
-  displayLayout: {
-    borderRadius: Border.br_mid,
+  adminTeamsTableBorder: {
+    borderWidth: 1,
+    borderStyle: "solid",
     overflow: "hidden",
     flex: 1,
   },
@@ -227,6 +216,8 @@ const styles = StyleSheet.create({
   textBorder: {
     borderColor: Color.twitchPurple8,
     borderWidth: 2,
+    borderStyle: "solid",
+    alignItems: "center",
   },
   resize: {
     alignItems: "center",
@@ -274,13 +265,12 @@ const styles = StyleSheet.create({
     fontSize: FontSize.size_4xl,
   },
   displayLeaderboardGameDraw: {
+    borderRadius: Border.br_mid,
     backgroundColor: Color.white,
     borderColor: Color.colorBlack,
-    borderWidth: 1,
     width: 180,
     paddingHorizontal: Padding.p_sm,
     paddingVertical: Padding.p_0,
-    borderStyle: "solid",
     alignItems: "center",
     justifyContent: "space-between",
     flexDirection: "row",
@@ -289,18 +279,25 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   frameParent: {
-    alignSelf: "stretch",
-    flex: 1,
-  },
-  displayLeaderboardInsideFraInner: {
     height: 42,
     alignSelf: "stretch",
   },
-  displayLeaderboardTableFram: {
+  displayLeaderboardInsideFraInner: {
     alignSelf: "stretch",
   },
-  displayLeaderboardInsideFra: {
+  adminTeamsTable: {
+    borderRadius: Border.br_9xs,
+    backgroundColor: Color.colorDarkslategray,
+    borderColor: Color.colorDimgray,
     alignSelf: "stretch",
+  },
+  adminTeamsTableFrame: {
+    alignSelf: "stretch",
+    flex: 1,
+  },
+  displayLeaderboardInsideFra: {
+    height: 366,
+    flex: 1,
   },
   displayLeaderboard: {
     width: "100%",

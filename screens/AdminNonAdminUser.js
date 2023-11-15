@@ -8,7 +8,7 @@ import {
   FlatList,
   TextInput,
 } from "react-native";
-import Row11 from "../components/Row11";
+import Row111 from "../components/Row11";
 import Row10 from "../components/Row10";
 import Row9 from "../components/Row9";
 import Row8 from "../components/Row8";
@@ -20,7 +20,7 @@ const AdminNonAdminUser = () => {
   const [
     adminNonAdminUserTableFlatListData,
     setAdminNonAdminUserTableFlatListData,
-  ] = useState([<Row11 />, <Row10 />, <Row9 />, <Row8 />]);
+  ] = useState([<Row111 />, <Row10 />, <Row9 />, <Row8 />]);
   const navigation = useNavigation();
 
   return (

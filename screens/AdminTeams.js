@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import Row23 from "../components/Row23";
 import Row22 from "../components/Row22";
-import Row21 from "../components/Row21";
+import Row211 from "../components/Row21";
 import Row20 from "../components/Row20";
 import DropDownPicker from "react-native-dropdown-picker";
 import { LinearGradient } from "expo-linear-gradient";
@@ -19,7 +19,7 @@ import { Padding, Color, Border, FontFamily, FontSize } from "../GlobalStyles";
 
 const AdminTeams = () => {
   const [adminTeamsTableFlatListData, setAdminTeamsTableFlatListData] =
-    useState([<Row23 />, <Row22 />, <Row21 />, <Row20 />]);
+    useState([<Row23 />, <Row22 />, <Row211 />, <Row20 />]);
   const [adminTeamsDivisionDropdownOpen, setAdminTeamsDivisionDropdownOpen] =
     useState(false);
   const [adminTeamsDivisionDropdownValue, setAdminTeamsDivisionDropdownValue] =
