@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Text,
   StyleSheet,
@@ -12,6 +12,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { FontSize, FontFamily, Padding, Color, Border } from "../GlobalStyles";
+global.globalData = null;
 
 const Login = () => {
   const [loginCompetitionsDropdownOpen, setLoginCompetitionsDropdownOpen] =
@@ -19,6 +20,79 @@ const Login = () => {
   const [loginCompetitionsDropdownValue, setLoginCompetitionsDropdownValue] =
     useState();
   const navigation = useNavigation();
+
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const saveData= async ()=>{
+    console.log(username);
+    console.log(password);
+    const username = 'RicardoD';
+    const password = 'A8335B39E3B25B7F331247280F2EE65CCED0DED67EFFBAF27B2E60E33B59AB5E';
+    const url = `http://10.211.55.7:8000/login?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+
+// Make the GET request
+try {
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      // Add any other headers if needed
+    },
+  });
+
+  if (!response.ok) {
+    console.log(response);
+    const errorResponse = {
+      error: 'An error occurred',
+      errorMessage: response.statusText,
+    };
+    console.log('Error Response:', errorResponse);
+  }
+
+  const jsonData = await response.json(); // Parse JSON data
+  console.log('Parsed JSON data:', jsonData);
+  const stringRole = JSON.stringify(jsonData);
+  console.log('JSON as String:', stringRole);
+
+  // Handle the response data or check if it's empty
+  if (stringRole.trim() === '') {
+    console.log('Response body is empty');
+  } else  {
+    // Now you can use jsonData directly
+    if(stringRole.includes('role')){
+      if(stringRole.includes('Admin')){
+        global.globalRole = stringRole;
+        navigation.navigate('Admin');
+      }
+      if(stringRole.includes('judge')){
+        global.globalRole = stringRole;
+        navigation.navigate('JudgeGameDraw');
+      }
+    }
+    if (stringRole.includes('error')) {
+      if (stringRole.includes('User not found')){
+        console.log('404 error');
+      }
+      if (stringRole.includes('Invalid query parameters')){
+        console.log('500 error');
+      }
+      if (stringRole.includes('An error occurred')){
+        console.log('500 error');
+      }
+      if (stringRole.includes('Invalid request method')){
+        console.log('405 error');
+      }
+    }
+  }
+} catch (error) {
+  // Handle errors
+  console.error('Error:', error);
+  }
+}
+
+  //console.log(password)
 
   return (
     <LinearGradient
@@ -42,12 +116,16 @@ const Login = () => {
               resizeMode="center"
               source={require("../assets/login2.jpg")}
             />
+
             <View style={[styles.loginInputs, styles.loginFlexBox]}>
               <TextInput
                 style={[styles.usernameTextbox, styles.textboxBorder]}
                 placeholder="Enter username here"
                 autoCapitalize="none"
                 placeholderTextColor="#a6a6a6"
+                onChangeText={(text)=>setUsername(text)}
+                value={username}
+
               />
               <TextInput
                 style={[
@@ -57,6 +135,9 @@ const Login = () => {
                 placeholder="Enter password here"
                 autoCapitalize="none"
                 placeholderTextColor="#a6a6a6"
+                secureTextEntry={true}
+                onChangeText={(text)=>setPassword(text)}
+                value={password}
               />
               <View
                 style={[
@@ -82,8 +163,11 @@ const Login = () => {
           </View>
         </View>
         <View style={[styles.loginButtons, styles.loginFlexBox]}>
-          <Pressable style={[styles.loginButton, styles.buttonBorder]}>
+          <Pressable style={[styles.loginButton, styles.buttonBorder]}
+            onPress={saveData}
+          >
             <Text style={[styles.login1, styles.login1Typo]}>Login</Text>
+            
           </Pressable>
           <TouchableHighlight
             style={[styles.viewLiveScoresButton, styles.buttonBorder]}

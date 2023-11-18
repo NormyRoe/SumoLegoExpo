@@ -10,8 +10,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontFamily, FontSize, Padding } from "../GlobalStyles";
 
+
+
 const Admin = () => {
   const navigation = useNavigation();
+  
 
   return (
     <LinearGradient

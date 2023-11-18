@@ -75,6 +75,34 @@ const AdminCompetition = () => {
       </TouchableOpacity>
     );
 
+    const handleCreateCompetition = async () => {
+      try {
+        const response = await fetch('http://10.211.55.7:8000/competitions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: textInputValues.name,
+            games_per_team: parseInt(textInputValues.games_per_team),
+            date: textInputValues.date,
+            // Include other fields if needed
+          }),
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Competition created successfully:', data);
+          // Handle successful creation, update state, etc.
+        } else {
+          console.error('Failed to create competition:', response.status, response.statusText);
+          // Handle error response
+        }
+      } catch (error) {
+        console.error('Error creating competition:', error);
+      }
+    };
+
   return (
     <LinearGradient
       style={styles.adminCompetition}
@@ -235,6 +263,7 @@ const AdminCompetition = () => {
                       styles.adminCompetitionCreateButto,
                       styles.adminLayout,
                     ]}
+                    onPress={handleCreateCompetition} 
                   >
                     <Text style={[styles.create, styles.createTypo]}>
                       Create

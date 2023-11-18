@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Image } from "expo-image";
 import {
   StyleSheet,
@@ -7,6 +7,7 @@ import {
   View,
   FlatList,
   TextInput,
+  TouchableOpacity,
 } from "react-native";
 import Row19 from "../components/Row19";
 import Row18 from "../components/Row18";
@@ -18,13 +19,68 @@ import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontFamily, FontSize, Padding } from "../GlobalStyles";
 
 const AdminFields = () => {
-  const [adminFieldTableFlatListData, setAdminFieldTableFlatListData] =
-    useState([<Row19 />, <Row18 />, <Row17 />, <Row16 />]);
   const [adminFieldDropdownFrameOpen, setAdminFieldDropdownFrameOpen] =
     useState(false);
   const [adminFieldDropdownFrameValue, setAdminFieldDropdownFrameValue] =
     useState();
+
+    const [responseData, setResponseData] = useState(null);
+    const [selectedRow, setSelectedRow] = useState(null);
+    const [textInputValues, setTextInputValues] = useState({
+      name: '',
+    });
+
   const navigation = useNavigation();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://10.211.55.7:8000/fields');
+        const data = await response.json();
+        setResponseData(data.fields);
+        console.log(data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const renderColumnHeader = (header) => (
+    <View style={styles.columnHeader}>
+      <Text style={styles.columnHeaderText}>{header}</Text>
+    </View>
+  );
+
+  const handleRowPress = (item) => {
+      // Update the selected row
+  setSelectedRow(item);
+
+  // Populate text input values with the selected row's data
+  setTextInputValues({
+    name: item.name,
+    division: item.division,
+    judge: item.judge,
+  });
+
+    // Handle the row press, navigate to a new screen, etc.
+    console.log('Row pressed:', item.name);
+  };
+
+  const renderRow = ({ item }) => (
+    <TouchableOpacity onPress={() => handleRowPress(item)}>
+      <View style={styles.row}>
+        <Text style={[styles.rowText, { color: 'white' }]}>{item.name}</Text>
+        <Text style={[styles.rowText, { color: 'white' }]}>{item.division}</Text>
+        <Text style={[styles.rowText, { color: 'white' }]}>{item.judge}</Text>
+        {/* Add any other fields you want to display */}
+      </View>
+    </TouchableOpacity>
+  );
+
+
+
 
   return (
     <LinearGradient
@@ -129,11 +185,23 @@ const AdminFields = () => {
             </View>
             <View style={[styles.adminFieldTableFrame, styles.adminFlexBox]}>
               <FlatList
-                style={[styles.adminFieldTable, styles.adminBorder2]}
-                data={adminFieldTableFlatListData}
-                renderItem={({ item }) => item}
-                contentContainerStyle={styles.adminFieldTableFlatListContent}
-              />
+                  style={[styles.adminFieldTable, styles.adminBorder2]}
+                  data={responseData}
+                  renderItem={renderRow}
+                  keyExtractor={(item) => item.field_id.toString()}
+                  contentContainerStyle={
+                    styles.adminCompetitionTableFlatListContent
+                  }
+                  
+                  ListHeaderComponent={() => (
+                  <View style={styles.columnHeaderContainer}>
+                    {renderColumnHeader('Name')}
+                    {renderColumnHeader('Division')}
+                    {renderColumnHeader('Judge')}
+                    {/* Add any other headers you want */}
+                  </View>
+                  )}
+                />
             </View>
           </View>
           <View style={[styles.frame4, styles.frameFlexBox1]}>
@@ -163,6 +231,8 @@ const AdminFields = () => {
                 </Text>
                 <TextInput
                   style={[styles.adminFieldNameTextField, styles.adminBorder1]}
+                  value={selectedRow ? selectedRow.name : ''}
+                  onChangeText={(text) => setTextInputValues({ ...textInputValues, name: text })}
                 />
               </View>
             </View>
@@ -322,6 +392,8 @@ const styles = StyleSheet.create({
     borderRadius: Border.br_9xs,
     backgroundColor: Color.colorDarkslategray,
     borderColor: Color.colorDimgray,
+    width: 575,
+    maxWidth: 575,
     alignSelf: "stretch",
     overflow: "hidden",
     borderWidth: 1,
@@ -332,6 +404,9 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     alignSelf: "stretch",
     overflow: "hidden",
+    flexDirection: "row",
+    height: "auto",
+    flex: 1,
   },
   frame1: {
     height: 225,
@@ -421,6 +496,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: Padding.p_7xs,
     paddingVertical: Padding.p_6xs,
     backgroundColor: Color.backGround,
+  },
+  adminCompetitionTableFlatListContent: {
+    flexDirection: "column",
+    color: "white",
+  },
+  columnHeaderContainer: {
+    flexDirection: 'row',
+    paddingBottom: 10,
+  },
+  columnHeaderContainer: {
+    flexDirection: 'row',
+    paddingBottom: 10,
+  },
+  columnHeader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#DDDDDD',
+    padding: 10,
+  },
+  columnHeaderText: {
+    fontWeight: 'bold',
+  },
+  row: {
+    flexDirection: 'row',
+    paddingBottom: 10,
+  },
+  rowText: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#DDDDDD',
+  },
+  selectedRow: {
+    backgroundColor: 'blue', // Adjust the color as needed
   },
 });
 
