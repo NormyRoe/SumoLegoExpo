@@ -2,18 +2,21 @@ import * as React from "react";
 import { StyleProp, ViewStyle, Text, StyleSheet, View } from "react-native";
 import { Color, FontSize, FontFamily, Padding } from "../GlobalStyles";
 
-const Row41 = ({ style }) => {
+const Row4 = ({ style }) => {
   return (
-    <View
-      style={[styles.displayLeaderboardTableRow, style, styles.contentFlexBox]}
-    >
-      <View style={[styles.cell, styles.cellBorder]}>
-        <View style={[styles.content, styles.contentFlexBox]}>
+    <View style={[styles.row, style, styles.rowFlexBox]}>
+      <View style={styles.cellBorder}>
+        <View style={[styles.content, styles.rowFlexBox]}>
           <Text style={styles.text} />
         </View>
       </View>
-      <View style={[styles.cell1, styles.cellBorder]}>
-        <View style={[styles.content, styles.contentFlexBox]}>
+      <View style={styles.cellBorder}>
+        <View style={[styles.content, styles.rowFlexBox]}>
+          <Text style={styles.text} />
+        </View>
+      </View>
+      <View style={[styles.cell2, styles.cellBorder]}>
+        <View style={[styles.content, styles.rowFlexBox]}>
           <Text style={styles.text} />
         </View>
       </View>
@@ -22,7 +25,7 @@ const Row41 = ({ style }) => {
 };
 
 const styles = StyleSheet.create({
-  contentFlexBox: {
+  rowFlexBox: {
     flexDirection: "row",
     overflow: "hidden",
     alignSelf: "stretch",
@@ -33,6 +36,7 @@ const styles = StyleSheet.create({
     borderColor: Color.colorDimgray,
     borderStyle: "solid",
     backgroundColor: Color.colorGray_300,
+    flex: 1,
     alignSelf: "stretch",
   },
   text: {
@@ -46,21 +50,20 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: Padding.p_xs,
     paddingVertical: Padding.p_3xs,
+    flexDirection: "row",
     overflow: "hidden",
     alignSelf: "stretch",
   },
-  cell: {
-    flex: 1,
+  cell2: {
+    display: "none",
   },
-  cell1: {
-    width: 76,
-  },
-  displayLeaderboardTableRow: {
-    height: 36,
+  row: {
     backgroundColor: Color.colorGray_300,
+    flexDirection: "row",
     overflow: "hidden",
+    flex: 1,
     alignSelf: "stretch",
   },
 });
 
-export default Row41;
+export default Row4;

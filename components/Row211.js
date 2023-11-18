@@ -2,20 +2,20 @@ import * as React from "react";
 import { StyleProp, ViewStyle, Text, StyleSheet, View } from "react-native";
 import { Color, FontSize, FontFamily, Padding } from "../GlobalStyles";
 
-const Row2 = ({ style }) => {
+const Row211 = ({ style }) => {
   return (
     <View style={[styles.row, style, styles.rowFlexBox]}>
-      <View style={styles.cellBorder}>
+      <View style={[styles.cell, styles.rowBg]}>
         <View style={[styles.content, styles.rowFlexBox]}>
           <Text style={styles.text} />
         </View>
       </View>
-      <View style={styles.cellBorder}>
+      <View style={[styles.cell, styles.rowBg]}>
         <View style={[styles.content, styles.rowFlexBox]}>
           <Text style={styles.text} />
         </View>
       </View>
-      <View style={[styles.cell2, styles.cellBorder]}>
+      <View style={[styles.cell, styles.rowBg]}>
         <View style={[styles.content, styles.rowFlexBox]}>
           <Text style={styles.text} />
         </View>
@@ -30,14 +30,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     alignSelf: "stretch",
   },
-  cellBorder: {
-    borderLeftWidth: 1,
-    borderTopWidth: 1,
-    borderColor: Color.colorDimgray,
-    borderStyle: "solid",
+  rowBg: {
     backgroundColor: Color.colorGray_300,
     flex: 1,
-    alignSelf: "stretch",
   },
   text: {
     fontSize: FontSize.size_xs,
@@ -50,20 +45,19 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: Padding.p_xs,
     paddingVertical: Padding.p_3xs,
-    flexDirection: "row",
-    overflow: "hidden",
-    alignSelf: "stretch",
   },
-  cell2: {
-    display: "none",
+  cell: {
+    borderStyle: "solid",
+    borderColor: Color.colorDimgray,
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    alignSelf: "stretch",
+    backgroundColor: Color.colorGray_300,
   },
   row: {
     backgroundColor: Color.colorGray_300,
-    flexDirection: "row",
-    overflow: "hidden",
     flex: 1,
-    alignSelf: "stretch",
   },
 });
 
-export default Row2;
+export default Row211;

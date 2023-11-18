@@ -2,7 +2,7 @@ import * as React from "react";
 import { StyleProp, ViewStyle, Text, StyleSheet, View } from "react-native";
 import { Color, FontSize, FontFamily, Padding } from "../GlobalStyles";
 
-const Row51 = ({ style }) => {
+const Row5 = ({ style }) => {
   return (
     <View
       style={[styles.displayLeaderboardTableRow, style, styles.contentFlexBox]}
@@ -63,4 +63,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Row51;
+export default Row5;

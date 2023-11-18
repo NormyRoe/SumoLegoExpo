@@ -1,37 +1,19 @@
 import * as React from "react";
 import { StyleProp, ViewStyle, Text, StyleSheet, View } from "react-native";
-import { FontSize, FontFamily, Color, Padding } from "../GlobalStyles";
+import { Color, FontSize, FontFamily, Padding } from "../GlobalStyles";
 
-const Row411 = ({ style }) => {
+const Row41 = ({ style }) => {
   return (
-    <View style={[styles.row, style, styles.rowFlexBox]}>
-      <View style={styles.cell}>
-        <View style={[styles.content, styles.rowFlexBox]}>
+    <View
+      style={[styles.displayLeaderboardTableRow, style, styles.contentFlexBox]}
+    >
+      <View style={[styles.cell, styles.cellBorder]}>
+        <View style={[styles.content, styles.contentFlexBox]}>
           <Text style={styles.text} />
         </View>
       </View>
-      <View style={styles.cell}>
-        <View style={[styles.content, styles.rowFlexBox]}>
-          <Text style={styles.text} />
-        </View>
-      </View>
-      <View style={styles.cell}>
-        <View style={[styles.content, styles.rowFlexBox]}>
-          <Text style={styles.text} />
-        </View>
-      </View>
-      <View style={styles.cell}>
-        <View style={[styles.content, styles.rowFlexBox]}>
-          <Text style={styles.text} />
-        </View>
-      </View>
-      <View style={styles.cell}>
-        <View style={[styles.content, styles.rowFlexBox]}>
-          <Text style={styles.text} />
-        </View>
-      </View>
-      <View style={styles.cell}>
-        <View style={[styles.content, styles.rowFlexBox]}>
+      <View style={[styles.cell1, styles.cellBorder]}>
+        <View style={[styles.content, styles.contentFlexBox]}>
           <Text style={styles.text} />
         </View>
       </View>
@@ -40,9 +22,17 @@ const Row411 = ({ style }) => {
 };
 
 const styles = StyleSheet.create({
-  rowFlexBox: {
+  contentFlexBox: {
     flexDirection: "row",
     overflow: "hidden",
+    alignSelf: "stretch",
+  },
+  cellBorder: {
+    borderLeftWidth: 1,
+    borderTopWidth: 1,
+    borderColor: Color.colorDimgray,
+    borderStyle: "solid",
+    backgroundColor: Color.colorGray_300,
     alignSelf: "stretch",
   },
   text: {
@@ -56,20 +46,21 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: Padding.p_xs,
     paddingVertical: Padding.p_3xs,
-  },
-  cell: {
-    borderStyle: "solid",
-    borderColor: Color.colorDimgray,
-    borderTopWidth: 1,
-    borderLeftWidth: 1,
-    flex: 1,
-    backgroundColor: Color.colorGray_300,
+    overflow: "hidden",
     alignSelf: "stretch",
   },
-  row: {
+  cell: {
+    flex: 1,
+  },
+  cell1: {
+    width: 76,
+  },
+  displayLeaderboardTableRow: {
     height: 36,
     backgroundColor: Color.colorGray_300,
+    overflow: "hidden",
+    alignSelf: "stretch",
   },
 });
 
-export default Row411;
+export default Row41;

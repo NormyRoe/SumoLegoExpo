@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ImageBackground,
   StyleSheet,
@@ -7,6 +7,7 @@ import {
   View,
   FlatList,
   TextInput,
+  TouchableOpacity,
 } from "react-native";
 import Row15 from "../components/Row15";
 import Row14 from "../components/Row14";
@@ -17,11 +18,62 @@ import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontFamily, FontSize, Padding } from "../GlobalStyles";
 
 const AdminCompetition = () => {
-  const [
-    adminCompetitionTableFlatListData,
-    setAdminCompetitionTableFlatListData,
-  ] = useState([<Row15 />, <Row14 />, <Row13 />, <Row12 />]);
-  const navigation = useNavigation();
+  const [responseData, setResponseData] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [textInputValues, setTextInputValues] = useState({
+    name: '',
+    games_per_team: '',
+    date: '',
+  });
+
+    const navigation = useNavigation();
+
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const response = await fetch('http://10.211.55.7:8000/competitions');
+          const data = await response.json();
+          setResponseData(data.competitions);
+          console.log(data);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
+  
+      fetchData();
+    }, []);
+
+    const renderColumnHeader = (header) => (
+      <View style={styles.columnHeader}>
+        <Text style={styles.columnHeaderText}>{header}</Text>
+      </View>
+    );
+
+    const handleRowPress = (item) => {
+        // Update the selected row
+    setSelectedRow(item);
+
+    // Populate text input values with the selected row's data
+    setTextInputValues({
+      name: item.name,
+      games_per_team: item.games_per_team.toString(),
+      date: item.date,
+    });
+
+      // Handle the row press, navigate to a new screen, etc.
+      console.log('Row pressed:', item.name);
+    };
+
+    const renderRow = ({ item }) => (
+      <TouchableOpacity onPress={() => handleRowPress(item)}>
+        <View style={styles.row}>
+          <Text style={[styles.rowText, { color: 'white' }]}>{item.name}</Text>
+          <Text style={[styles.rowText, { color: 'white' }]}>{item.games_per_team}</Text>
+          <Text style={[styles.rowText, { color: 'white' }]}>{item.date}</Text>
+          {/* Add any other fields you want to display */}
+        </View>
+      </TouchableOpacity>
+    );
 
   return (
     <LinearGradient
@@ -130,11 +182,21 @@ const AdminCompetition = () => {
               <View style={styles.adminCompetitionTableFrame}>
                 <FlatList
                   style={[styles.adminCompetitionTable, styles.adminBorder2]}
-                  data={adminCompetitionTableFlatListData}
-                  renderItem={({ item }) => item}
+                  data={responseData}
+                  renderItem={renderRow}
+                  keyExtractor={(item) => item.competition_id.toString()}
                   contentContainerStyle={
                     styles.adminCompetitionTableFlatListContent
                   }
+                  
+                  ListHeaderComponent={() => (
+                  <View style={styles.columnHeaderContainer}>
+                    {renderColumnHeader('Name')}
+                    {renderColumnHeader('Games Per Team')}
+                    {renderColumnHeader('Date')}
+                    {/* Add any other headers you want */}
+                  </View>
+                  )}
                 />
               </View>
               <View style={[styles.frame5, styles.frameSpaceBlock]}>
@@ -186,6 +248,8 @@ const AdminCompetition = () => {
                     styles.adminCompetitionNameTextFi,
                     styles.adminBorder,
                   ]}
+                  value={selectedRow ? selectedRow.name : ''}
+                  onChangeText={(text) => setTextInputValues({ ...textInputValues, name: text })}
                   autoCapitalize="none"
                 />
                 <TextInput
@@ -193,6 +257,8 @@ const AdminCompetition = () => {
                     styles.adminCompetitionDateTextFi,
                     styles.frame10SpaceBlock,
                   ]}
+                  value={selectedRow ? selectedRow.games_per_team.toString() : ''}
+                  onChangeText={(text) => setTextInputValues({ ...textInputValues, games_per_team: text })}
                   autoCapitalize="none"
                 />
                 <TextInput
@@ -200,6 +266,8 @@ const AdminCompetition = () => {
                     styles.adminCompetitionDateTextFi,
                     styles.frame10SpaceBlock,
                   ]}
+                  value={selectedRow ? selectedRow.date : ''}
+                  onChangeText={(text) => setTextInputValues({ ...textInputValues, date: text })}
                   autoCapitalize="none"
                 />
                 <TextInput
@@ -240,6 +308,7 @@ const AdminCompetition = () => {
 const styles = StyleSheet.create({
   adminCompetitionTableFlatListContent: {
     flexDirection: "column",
+    color: "white",
   },
   adminBorder2: {
     borderWidth: 1,
@@ -378,6 +447,8 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
     overflow: "hidden",
     flexDirection: "row",
+    height: "auto",
+    flex: 1,
   },
   competitionDetails: {
     fontSize: FontSize.size_mid,
@@ -490,6 +561,38 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flex: 1,
   },
+
+  
+    columnHeaderContainer: {
+      flexDirection: 'row',
+      paddingBottom: 10,
+    },
+    columnHeader: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#DDDDDD',
+      padding: 10,
+    },
+    columnHeaderText: {
+      fontWeight: 'bold',
+    },
+    row: {
+      flexDirection: 'row',
+      paddingBottom: 10,
+    },
+    rowText: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 10,
+      borderWidth: 1,
+      borderColor: '#DDDDDD',
+    },
+    selectedRow: {
+      backgroundColor: 'blue', // Adjust the color as needed
+    },
+
 });
 
 export default AdminCompetition;

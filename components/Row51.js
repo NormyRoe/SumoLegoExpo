@@ -1,17 +1,19 @@
 import * as React from "react";
-import { Text, StyleSheet, View } from "react-native";
+import { StyleProp, ViewStyle, Text, StyleSheet, View } from "react-native";
 import { Color, FontSize, FontFamily, Padding } from "../GlobalStyles";
 
-const Row511 = () => {
+const Row51 = ({ style }) => {
   return (
-    <View style={styles.row}>
+    <View
+      style={[styles.displayLeaderboardTableRow, style, styles.contentFlexBox]}
+    >
       <View style={[styles.cell, styles.cellBorder]}>
-        <View style={styles.content}>
+        <View style={[styles.content, styles.contentFlexBox]}>
           <Text style={styles.text} />
         </View>
       </View>
       <View style={[styles.cell1, styles.cellBorder]}>
-        <View style={styles.content}>
+        <View style={[styles.content, styles.contentFlexBox]}>
           <Text style={styles.text} />
         </View>
       </View>
@@ -20,13 +22,18 @@ const Row511 = () => {
 };
 
 const styles = StyleSheet.create({
+  contentFlexBox: {
+    flexDirection: "row",
+    overflow: "hidden",
+    alignSelf: "stretch",
+  },
   cellBorder: {
     borderLeftWidth: 1,
     borderTopWidth: 1,
     borderColor: Color.colorDimgray,
     borderStyle: "solid",
-    alignSelf: "stretch",
     backgroundColor: Color.colorGray_300,
+    alignSelf: "stretch",
   },
   text: {
     fontSize: FontSize.size_xs,
@@ -39,9 +46,8 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: Padding.p_xs,
     paddingVertical: Padding.p_3xs,
-    alignSelf: "stretch",
-    flexDirection: "row",
     overflow: "hidden",
+    alignSelf: "stretch",
   },
   cell: {
     flex: 1,
@@ -49,13 +55,12 @@ const styles = StyleSheet.create({
   cell1: {
     width: 76,
   },
-  row: {
-    width: 755,
+  displayLeaderboardTableRow: {
     height: 36,
-    flexDirection: "row",
-    overflow: "hidden",
     backgroundColor: Color.colorGray_300,
+    overflow: "hidden",
+    alignSelf: "stretch",
   },
 });
 
-export default Row511;
+export default Row51;

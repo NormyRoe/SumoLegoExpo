@@ -1,20 +1,23 @@
 import * as React from "react";
 import { StyleProp, ViewStyle, Text, StyleSheet, View } from "react-native";
-import { Color, FontSize, FontFamily, Padding } from "../GlobalStyles";
+import { Padding, Color, FontFamily, FontSize } from "../GlobalStyles";
 
-const Row31 = ({ style }) => {
+const Row3 = ({ style }) => {
   return (
-    <View
-      style={[styles.displayLeaderboardTableRow, style, styles.contentFlexBox]}
-    >
-      <View style={[styles.cell, styles.cellBorder]}>
-        <View style={[styles.content, styles.contentFlexBox]}>
-          <Text style={styles.text} />
+    <View style={[styles.row, style, styles.rowFlexBox]}>
+      <View style={styles.cellBorder}>
+        <View style={[styles.content, styles.contentSpaceBlock]}>
+          <Text style={[styles.text, styles.textTypo]}>Name</Text>
         </View>
       </View>
-      <View style={[styles.cell1, styles.cellBorder]}>
-        <View style={[styles.content, styles.contentFlexBox]}>
-          <Text style={styles.text} />
+      <View style={styles.cellBorder}>
+        <View style={[styles.content, styles.contentSpaceBlock]}>
+          <Text style={[styles.text, styles.textTypo]}>Points</Text>
+        </View>
+      </View>
+      <View style={[styles.cell2, styles.cellBorder]}>
+        <View style={styles.contentSpaceBlock}>
+          <Text style={styles.textTypo}>Division</Text>
         </View>
       </View>
     </View>
@@ -22,45 +25,63 @@ const Row31 = ({ style }) => {
 };
 
 const styles = StyleSheet.create({
-  contentFlexBox: {
+  rowFlexBox: {
+    alignItems: "center",
+    alignSelf: "stretch",
+  },
+  contentSpaceBlock: {
+    paddingVertical: Padding.p_3xs,
+    paddingHorizontal: Padding.p_xs,
     flexDirection: "row",
     overflow: "hidden",
     alignSelf: "stretch",
+  },
+  textTypo: {
+    textAlign: "left",
+    color: Color.white,
+    fontFamily: FontFamily.interSemiBold,
+    fontWeight: "600",
+    lineHeight: 16,
+    fontSize: FontSize.size_xs,
+    flex: 1,
   },
   cellBorder: {
     borderLeftWidth: 1,
     borderTopWidth: 1,
     borderColor: Color.colorDimgray,
     borderStyle: "solid",
-    backgroundColor: Color.colorGray_300,
+    backgroundColor: Color.colorGray_200,
+    flex: 1,
     alignSelf: "stretch",
   },
   text: {
-    fontSize: FontSize.size_xs,
-    lineHeight: 16,
-    fontFamily: FontFamily.interRegular,
-    color: Color.white,
+    display: "flex",
+    alignItems: "center",
+    alignSelf: "stretch",
     textAlign: "left",
-    flex: 1,
+    color: Color.white,
+    fontFamily: FontFamily.interSemiBold,
+    fontWeight: "600",
+    lineHeight: 16,
+    fontSize: FontSize.size_xs,
   },
   content: {
-    paddingHorizontal: Padding.p_xs,
-    paddingVertical: Padding.p_3xs,
-    overflow: "hidden",
-    alignSelf: "stretch",
-  },
-  cell: {
     flex: 1,
+    paddingVertical: Padding.p_3xs,
+    paddingHorizontal: Padding.p_xs,
   },
-  cell1: {
-    width: 76,
+  cell2: {
+    display: "none",
   },
-  displayLeaderboardTableRow: {
-    height: 36,
+  row: {
     backgroundColor: Color.colorGray_300,
+    justifyContent: "center",
+    flexDirection: "row",
     overflow: "hidden",
+    alignItems: "center",
+    flex: 1,
     alignSelf: "stretch",
   },
 });
 
-export default Row31;
+export default Row3;
