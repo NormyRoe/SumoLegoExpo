@@ -7,92 +7,90 @@ import {
   View,
   Pressable,
   TouchableHighlight,
+  Alert,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { FontSize, FontFamily, Padding, Color, Border } from "../GlobalStyles";
-global.globalData = null;
+import * as Crypto from 'expo-crypto';
+
+const BASE_URL = "http://192.168.1.106:8000"; // Global variable for the API base URL
 
 const Login = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [competitionsData, setCompetitionsData] = useState([]);
+  const [error, setError] = useState(null);
   const [loginCompetitionsDropdownOpen, setLoginCompetitionsDropdownOpen] =
     useState(false);
   const [loginCompetitionsDropdownValue, setLoginCompetitionsDropdownValue] =
     useState();
+    const [selectedCompetitionId, setSelectedCompetitionId] = useState(null);
   const navigation = useNavigation();
 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
 
-  const saveData= async ()=>{
-    console.log(username);
-    console.log(password);
-    const username = 'RicardoD';
-    const password = 'A8335B39E3B25B7F331247280F2EE65CCED0DED67EFFBAF27B2E60E33B59AB5E';
-    const url = `http://10.211.55.7:8000/login?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+  useEffect(() => {
+    // Fetch competitions data upon component mount
+    const fetchCompetitionsData = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/competitions`);
+        const data = await response.json();
 
-// Make the GET request
-try {
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      // Add any other headers if needed
-    },
-  });
-
-  if (!response.ok) {
-    console.log(response);
-    const errorResponse = {
-      error: 'An error occurred',
-      errorMessage: response.statusText,
+        if (data.error) {
+          setError(data.error);
+        } else {
+          setCompetitionsData(data.competitions);
+        }
+      } catch (error) {
+        console.error("Error fetching competitions:", error);
+        setError("An error occurred while fetching competitions.");
+      }
     };
-    console.log('Error Response:', errorResponse);
-  }
 
-  const jsonData = await response.json(); // Parse JSON data
-  console.log('Parsed JSON data:', jsonData);
-  const stringRole = JSON.stringify(jsonData);
-  console.log('JSON as String:', stringRole);
+    fetchCompetitionsData();
+        
 
-  // Handle the response data or check if it's empty
-  if (stringRole.trim() === '') {
-    console.log('Response body is empty');
-  } else  {
-    // Now you can use jsonData directly
-    if(stringRole.includes('role')){
-      if(stringRole.includes('Admin')){
-        global.globalRole = stringRole;
-        navigation.navigate('Admin');
+  }, []); // Empty dependency array ensures this effect runs only once on component mount
+
+
+  const handleLogin = async () => {
+    try {
+      // Hash the password using SHA256
+      const hashed_password = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password);
+
+      // Construct the URL with username and hashed_password
+      const loginURL = `${BASE_URL}/login?username=${encodeURIComponent(username)}&password=${hashed_password}`;
+
+      // Make the HTTP GET request
+      const response = await fetch(loginURL);
+      const data = await response.json();
+
+      if (data.role) {
+        // If role is Admin or Judge, redirect accordingly
+        if (data.role === "Admin") {
+          navigation.navigate("Admin");
+        } else if (data.role === "Judge") {
+          
+          // Check if a competition is selected
+          if (!selectedCompetitionId) {
+            Alert.alert("Error", "Please select a competition.");
+            return;
+          }
+          navigation.navigate("JudgeGameDraw");
+        }
+      } else if (data.error) {
+        // If error is returned, display the error message
+        Alert.alert("Error", data.error);
       }
-      if(stringRole.includes('judge')){
-        global.globalRole = stringRole;
-        navigation.navigate('JudgeGameDraw');
-      }
+      // Add console logs for debugging
+      console.log("Dropdown Open: ", loginCompetitionsDropdownOpen);
+      console.log("Competitions Data: ", competitionsData);
+
+    } catch (error) {
+      console.error("Error during login:", error);
     }
-    if (stringRole.includes('error')) {
-      if (stringRole.includes('User not found')){
-        console.log('404 error');
-      }
-      if (stringRole.includes('Invalid query parameters')){
-        console.log('500 error');
-      }
-      if (stringRole.includes('An error occurred')){
-        console.log('500 error');
-      }
-      if (stringRole.includes('Invalid request method')){
-        console.log('405 error');
-      }
-    }
-  }
-} catch (error) {
-  // Handle errors
-  console.error('Error:', error);
-  }
-}
-
-  //console.log(password)
+  };
 
   return (
     <LinearGradient
@@ -116,16 +114,13 @@ try {
               resizeMode="center"
               source={require("../assets/login2.jpg")}
             />
-
             <View style={[styles.loginInputs, styles.loginFlexBox]}>
               <TextInput
                 style={[styles.usernameTextbox, styles.textboxBorder]}
                 placeholder="Enter username here"
                 autoCapitalize="none"
                 placeholderTextColor="#a6a6a6"
-                onChangeText={(text)=>setUsername(text)}
-                value={username}
-
+                onChangeText={(text) => setUsername(text)}
               />
               <TextInput
                 style={[
@@ -135,9 +130,7 @@ try {
                 placeholder="Enter password here"
                 autoCapitalize="none"
                 placeholderTextColor="#a6a6a6"
-                secureTextEntry={true}
-                onChangeText={(text)=>setPassword(text)}
-                value={password}
+                onChangeText={(text) => setPassword(text)}
               />
               <View
                 style={[
@@ -150,24 +143,35 @@ try {
                   open={loginCompetitionsDropdownOpen}
                   setOpen={setLoginCompetitionsDropdownOpen}
                   value={loginCompetitionsDropdownValue}
-                  setValue={setLoginCompetitionsDropdownValue}
+                  setValue={(value) => {
+                    // Update the selected competition ID when an item is selected
+                    setLoginCompetitionsDropdownValue(value);
+                    setSelectedCompetitionId(value);
+                  }}
                   placeholder="Competitions"
-                  items={[]}
+                  items={competitionsData.map((competition) => ({
+                    label: `${competition.name} (${competition.date})`,
+                    value: competition.competition_id.toString(),
+                  }))}
                   labelStyle={styles.loginCompetitionsDropdownValue}
                   dropDownContainerStyle={
                     styles.loginCompetitionsDropdowndropDownContainer
                   }
-                />
+                  onChangeItem={(item) => {
+                    console.log("Selected Competition: ", item.value);
+                  }}
+                  
+                /> 
               </View>
             </View>
           </View>
         </View>
         <View style={[styles.loginButtons, styles.loginFlexBox]}>
-          <Pressable style={[styles.loginButton, styles.buttonBorder]}
-            onPress={saveData}
+          <Pressable 
+            style={[styles.loginButton, styles.buttonBorder]}
+            onPress={handleLogin}
           >
             <Text style={[styles.login1, styles.login1Typo]}>Login</Text>
-            
           </Pressable>
           <TouchableHighlight
             style={[styles.viewLiveScoresButton, styles.buttonBorder]}
@@ -183,6 +187,7 @@ try {
       </View>
     </LinearGradient>
   );
+  
 };
 
 const styles = StyleSheet.create({
@@ -195,6 +200,7 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     borderColor: "#000",
     borderWidth: 1,
+    // zIndex: 1000,
   },
   loginFlexBox1: {
     justifyContent: "space-between",
@@ -277,7 +283,7 @@ const styles = StyleSheet.create({
   loginCompetitionsDropdown: {
     borderRadius: Border.br_5xs,
     height: 41,
-    overflow: "hidden",
+    // overflow: "hidden",
   },
   loginInputs: {
     height: 123,
