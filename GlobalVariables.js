@@ -20,11 +20,11 @@ export let selectedFieldId = null;
 
 export let schoolsData = [];
 
-export let selectedSchoolsId = null;
+export let selectedSchoolId = null;
 
 export let teamsData = [];
 
-export let selectedTeamsId = null;
+export let selectedTeamId = null;
 
 export let gameResultsData = [];
 
@@ -41,57 +41,57 @@ export const updateSelectedCompetitionId = (id) => {
 
 
 export const updateDivisionsData = (data) => {
-    competitionsData = data;
+    divisionsData = data;
   };
 
-export const updateSelectedDivisionsId = (id) => {
-    selectedCompetitionId = id;
+export const updateSelectedDivisionId = (id) => {
+    selectedDivisionId = id;
   };
 
 
 export const updateUsersData = (data) => {
-    competitionsData = data;
+    usersData = data;
   };
 
-export const updateSelectedUsersId = (id) => {
-    selectedCompetitionId = id;
+export const updateSelectedUserId = (id) => {
+    selectedUserId = id;
   };
 
 
 export const updateFieldsData = (data) => {
-    competitionsData = data;
+    fieldsData = data;
   };
 
-export const updateSelectedFieldsId = (id) => {
-    selectedCompetitionId = id;
+export const updateSelectedFieldId = (id) => {
+    selectedFieldId = id;
   };
 
 
 
 export const updateSchoolsData = (data) => {
-    competitionsData = data;
+    schoolsData = data;
   };
 
-export const updateSelectedSchoolsId = (id) => {
-    selectedCompetitionId = id;
+export const updateSelectedSchoolId = (id) => {
+    selectedSchoolId = id;
   };
 
 
 export const updateTeamsData = (data) => {
-    competitionsData = data;
+    teamsData = data;
   };
 
-export const updateSelectedTeamsId = (id) => {
-    selectedCompetitionId = id;
+export const updateSelectedTeamId = (id) => {
+    selectedTeamId = id;
   };
 
 
 export const updateGameResultsData = (data) => {
-    competitionsData = data;
+    gameResultsData = data;
   };
 
-export const updateSelectedGameResultsId = (id) => {
-    selectedCompetitionId = id;
+export const updateSelectedGameResultId = (id) => {
+    selectedGameResultId = id;
   };
   
 
