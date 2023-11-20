@@ -14,19 +14,18 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { FontSize, FontFamily, Padding, Color, Border } from "../GlobalStyles";
 import * as Crypto from 'expo-crypto';
+import { BASE_URL, competitionsData, updateCompetitionsData, selectedCompetitionId, updateSelectedCompetitionId } from "../GlobalVariables";
 
-const BASE_URL = "http://192.168.1.106:8000"; // Global variable for the API base URL
+
 
 const Login = () => {
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [competitionsData, setCompetitionsData] = useState([]);
+  const [password, setPassword] = useState("");  
   const [error, setError] = useState(null);
   const [loginCompetitionsDropdownOpen, setLoginCompetitionsDropdownOpen] =
     useState(false);
   const [loginCompetitionsDropdownValue, setLoginCompetitionsDropdownValue] =
-    useState();
-    const [selectedCompetitionId, setSelectedCompetitionId] = useState(null);
+    useState();  
   const navigation = useNavigation();
 
 
@@ -40,7 +39,7 @@ const Login = () => {
         if (data.error) {
           setError(data.error);
         } else {
-          setCompetitionsData(data.competitions);
+          updateCompetitionsData(data.competitions); // Update the global variable
         }
       } catch (error) {
         console.error("Error fetching competitions:", error);
@@ -74,14 +73,14 @@ const Login = () => {
           
           // Check if a competition is selected
           if (!selectedCompetitionId) {
-            Alert.alert("Error", "Please select a competition.");
+            window.alert("Please select a competition.");
             return;
           }
           navigation.navigate("JudgeGameDraw");
         }
       } else if (data.error) {
         // If error is returned, display the error message
-        Alert.alert("Error", data.error);
+        window.alert(data.error);
       }
       // Add console logs for debugging
       console.log("Dropdown Open: ", loginCompetitionsDropdownOpen);
@@ -146,7 +145,7 @@ const Login = () => {
                   setValue={(value) => {
                     // Update the selected competition ID when an item is selected
                     setLoginCompetitionsDropdownValue(value);
-                    setSelectedCompetitionId(value);
+                    updateSelectedCompetitionId(value);
                   }}
                   placeholder="Competitions"
                   items={competitionsData.map((competition) => ({
@@ -177,7 +176,13 @@ const Login = () => {
             style={[styles.viewLiveScoresButton, styles.buttonBorder]}
             underlayColor="#fff"
             activeOpacity={0.2}
-            onPress={() => navigation.navigate("DisplayLeaderboard")}
+            onPress={() => {
+              if (!selectedCompetitionId) {
+                window.alert("Please select a competition.");
+              } else {
+                navigation.navigate("DisplayLeaderboard");
+              }
+            }}
           >
             <Text style={[styles.viewLiveScores, styles.login1Typo]}>
               View Live Scores
