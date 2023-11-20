@@ -16,6 +16,7 @@ import Row12 from "../components/Row12";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontFamily, FontSize, Padding } from "../GlobalStyles";
+import { BASE_URL, competitionsData, updateCompetitionsData, selectedCompetitionId, updateSelectedCompetitionId, accessRole } from "../GlobalVariables";
 
 const AdminCompetition = () => {
   const [responseData, setResponseData] = useState(null);
@@ -24,23 +25,31 @@ const AdminCompetition = () => {
     name: '',
     games_per_team: '',
     date: '',
+    fields_per_division: '',
   });
 
     const navigation = useNavigation();
 
     useEffect(() => {
-      const fetchData = async () => {
+      const fetchCompetitionsData = async () => {
         try {
-          const response = await fetch('http://10.211.55.7:8000/competitions');
+          const response = await fetch(`${BASE_URL}/competitions`);
           const data = await response.json();
-          setResponseData(data.competitions);
+
+          if (data.error) {
+            setError(data.error);
+          } else {
+            updateCompetitionsData(data.competitions); // Update the global variable
+          }
+          
           console.log(data);
+
         } catch (error) {
           console.error('Error fetching data:', error);
         }
       };
   
-      fetchData();
+      fetchCompetitionsData();
     }, []);
 
     const renderColumnHeader = (header) => (
@@ -51,14 +60,18 @@ const AdminCompetition = () => {
 
     const handleRowPress = (item) => {
         // Update the selected row
-    setSelectedRow(item);
+      setSelectedRow(item);
 
-    // Populate text input values with the selected row's data
-    setTextInputValues({
-      name: item.name,
-      games_per_team: item.games_per_team.toString(),
-      date: item.date,
-    });
+      // Set the selected competition ID
+      updateSelectedCompetitionId(item.competition_id);
+
+      // Populate text input values with the selected row's data
+      setTextInputValues({
+        name: item.name,
+        games_per_team: item.games_per_team.toString(),
+        date: item.date,
+        fields_per_division: item.nbr_of_fields.toString(),
+      });
 
       // Handle the row press, navigate to a new screen, etc.
       console.log('Row pressed:', item.name);
@@ -70,38 +83,68 @@ const AdminCompetition = () => {
           <Text style={[styles.rowText, { color: 'white' }]}>{item.name}</Text>
           <Text style={[styles.rowText, { color: 'white' }]}>{item.games_per_team}</Text>
           <Text style={[styles.rowText, { color: 'white' }]}>{item.date}</Text>
+          <Text style={[styles.rowText, { color: 'white' }]}>{item.nbr_of_fields}</Text>
           {/* Add any other fields you want to display */}
         </View>
       </TouchableOpacity>
     );
 
+    const handleSetCurrentCompetition = () => {
+      if (selectedRow) {
+        // Set the current competition ID
+        updateSelectedCompetitionId(selectedRow.competition_id);
+        // Handle other actions if needed
+      } else {
+        // Display an alert if no competition is selected
+        window.alert('Please select a competition from the table.');
+      }
+    };
+
+    const handleClearFields = () => {
+      // Clear all text input values
+      setTextInputValues({
+        name: '',
+        games_per_team: '',
+        date: '',
+        fields_per_division: '',
+      })};
+
     const handleCreateCompetition = async () => {
       try {
-        const response = await fetch('http://10.211.55.7:8000/competitions', {
+        const response = await fetch(`${BASE_URL}/competitions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
+            access_role: accessRole,
             name: textInputValues.name,
-            games_per_team: parseInt(textInputValues.games_per_team),
+            games_per_team: textInputValues.games_per_team,
             date: textInputValues.date,
-            // Include other fields if needed
+            nbr_of_fields: textInputValues.fields_per_division,
           }),
         });
-  
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Competition created successfully:', data);
-          // Handle successful creation, update state, etc.
+      
+        const data = await response.json();
+     
+        if (data.error) {
+          console.error('Error creating competition:', data.error);
         } else {
-          console.error('Failed to create competition:', response.status, response.statusText);
-          // Handle error response
+          // Update competitionsData with the new competition data
+          updateCompetitionsData([...competitionsData, { competition_id: data.competition_id, ...textInputValues }]);
+          // Clear text input values
+          setTextInputValues({
+            name: '',
+            games_per_team: '',
+            date: '',
+            fields_per_division: '',
+          });
         }
       } catch (error) {
         console.error('Error creating competition:', error);
       }
     };
+
 
   return (
     <LinearGradient
@@ -210,7 +253,7 @@ const AdminCompetition = () => {
               <View style={styles.adminCompetitionTableFrame}>
                 <FlatList
                   style={[styles.adminCompetitionTable, styles.adminBorder2]}
-                  data={responseData}
+                  data={competitionsData}
                   renderItem={renderRow}
                   keyExtractor={(item) => item.competition_id.toString()}
                   contentContainerStyle={
@@ -263,7 +306,7 @@ const AdminCompetition = () => {
                       styles.adminCompetitionCreateButto,
                       styles.adminLayout,
                     ]}
-                    onPress={handleCreateCompetition} 
+                    onPress={handleCreateCompetition}
                   >
                     <Text style={[styles.create, styles.createTypo]}>
                       Create
@@ -277,7 +320,7 @@ const AdminCompetition = () => {
                     styles.adminCompetitionNameTextFi,
                     styles.adminBorder,
                   ]}
-                  value={selectedRow ? selectedRow.name : ''}
+                  value={textInputValues.name}
                   onChangeText={(text) => setTextInputValues({ ...textInputValues, name: text })}
                   autoCapitalize="none"
                 />
@@ -286,7 +329,7 @@ const AdminCompetition = () => {
                     styles.adminCompetitionDateTextFi,
                     styles.frame10SpaceBlock,
                   ]}
-                  value={selectedRow ? selectedRow.games_per_team.toString() : ''}
+                  value={textInputValues.games_per_team}
                   onChangeText={(text) => setTextInputValues({ ...textInputValues, games_per_team: text })}
                   autoCapitalize="none"
                 />
@@ -295,7 +338,7 @@ const AdminCompetition = () => {
                     styles.adminCompetitionDateTextFi,
                     styles.frame10SpaceBlock,
                   ]}
-                  value={selectedRow ? selectedRow.date : ''}
+                  value={textInputValues.date}
                   onChangeText={(text) => setTextInputValues({ ...textInputValues, date: text })}
                   autoCapitalize="none"
                 />
@@ -304,6 +347,8 @@ const AdminCompetition = () => {
                     styles.adminCompetitionDateTextFi,
                     styles.frame10SpaceBlock,
                   ]}
+                  value={textInputValues.fields_per_division}
+                  onChangeText={(text) => setTextInputValues({ ...textInputValues, fields_per_division: text })}
                   autoCapitalize="none"
                 />
                 <View style={[styles.frame10, styles.frame10SpaceBlock]}>
@@ -312,6 +357,7 @@ const AdminCompetition = () => {
                       styles.adminCompetitionCreateField,
                       styles.adminLayout,
                     ]}
+                    onPress={handleClearFields}
                   >
                     <Text style={[styles.create, styles.createTypo]}>
                       Clear fields
@@ -322,7 +368,7 @@ const AdminCompetition = () => {
             </View>
           </View>
           <View style={[styles.frame11, styles.frameSpaceBlock]}>
-            <Pressable style={styles.adminCompetitionSetCompetit}>
+            <Pressable style={styles.adminCompetitionSetCompetit} onPress={handleSetCurrentCompetition}>
               <Text style={[styles.create, styles.createTypo]}>
                 Set as current competition
               </Text>
@@ -464,7 +510,6 @@ const styles = StyleSheet.create({
     backgroundColor: Color.colorDarkslategray,
     borderColor: Color.colorDimgray,
     width: 575,
-    maxWidth: 575,
     alignSelf: "stretch",
     overflow: "hidden",
     borderWidth: 1,
