@@ -14,7 +14,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { FontSize, FontFamily, Padding, Color, Border } from "../GlobalStyles";
 import * as Crypto from 'expo-crypto';
-import { BASE_URL, competitionsData, updateCompetitionsData, selectedCompetitionId, updateSelectedCompetitionId } from "../GlobalVariables";
+import { BASE_URL, competitionsData, updateCompetitionsData, selectedCompetitionId, updateSelectedCompetitionId, updateAccessRole } from "../GlobalVariables";
 
 
 
@@ -64,6 +64,8 @@ const Login = () => {
       // Make the HTTP GET request
       const response = await fetch(loginURL);
       const data = await response.json();
+
+      updateAccessRole(data.role);
 
       if (data.role) {
         // If role is Admin or Judge, redirect accordingly
@@ -159,8 +161,8 @@ const Login = () => {
                   onChangeItem={(item) => {
                     console.log("Selected Competition: ", item.value);
                   }}
-                  
-                /> 
+                    
+                />           
               </View>
             </View>
           </View>
