@@ -122,6 +122,16 @@ const AdminCompetition = () => {
           return;
         }
 
+        // Validate games_per_team and fields_per_division as numerical values
+        const isGamesPerTeamNumeric = /^\d+$/.test(textInputValues.games_per_team);
+        const isFieldsPerDivisionNumeric = /^\d+$/.test(textInputValues.fields_per_division);
+
+        if (!isGamesPerTeamNumeric || !isFieldsPerDivisionNumeric) {
+          // Display an error message to the user
+          window.alert('Please enter numerical values for Games Per Team and Fields Per Division.');
+          return;
+        }
+
         // Format the date using moment
         const formattedDate = moment(textInputValues.date, 'DD-MM-YYYY').format('YYYY/MM/DD');        
 
