@@ -3,6 +3,7 @@ import { Text, StyleSheet, View, Pressable, FlatList } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import DisplayGameDrawTable from "../components/DisplayGameDrawTable";
 import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation } from "@react-navigation/native";
 import { Padding, Border, Color, FontSize, FontFamily } from "../GlobalStyles";
 
 const DisplayGameDraw = () => {
@@ -16,6 +17,8 @@ const DisplayGameDraw = () => {
     displayGameDrawTableFrameFlatListData,
     setDisplayGameDrawTableFrameFlatListData,
   ] = useState([<DisplayGameDrawTable />]);
+
+  const navigation = useNavigation();
 
   return (
     <LinearGradient
@@ -88,7 +91,10 @@ const DisplayGameDraw = () => {
                   styles.dropdownMenu1SpaceBlock,
                 ]}
               >
-                <Text style={styles.leaderboards}>Leaderboards</Text>
+                <Pressable onPress={() => navigation.navigate("DisplayLeaderboard")}>
+                  <Text style={styles.leaderboards}>Leaderboards</Text>
+                </Pressable>
+                
               </View>
             </View>
           </View>
