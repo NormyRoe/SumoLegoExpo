@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Image } from "expo-image";
-import { StyleSheet, Pressable, Text, View, TextInput, FlatList } from "react-native";
+import { StyleSheet, Pressable, Text, View, TextInput, FlatList, TouchableOpacity } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { FontSize, FontFamily, Color, Border, Padding } from "../GlobalStyles";
+import { BASE_URL, schoolsData, updateSchoolsData } from "../GlobalVariables";
 
 const AdminSchools = () => {
   const [adminSchoolsPaidDropdownOpen, setAdminSchoolsPaidDropdownOpen] =
@@ -29,16 +30,24 @@ const AdminSchools = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://10.211.55.7:8000/schools');
+        const response = await fetch(`${BASE_URL}/schools`);
         const data = await response.json();
-        setResponseData(data.schools);
-        console.log(data);
+
+        if (data.error){
+          setError(data.error);
+        } else {
+          updateSchoolsData(data.schools);
+          console.log(data.schools);
+          console.log(schoolsData);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
+        setError("An error occured while feaching schools");
       }
     };
 
     fetchData();
+
   }, []);
 
   const renderColumnHeader = (header) => (
@@ -47,7 +56,7 @@ const AdminSchools = () => {
     </View>
   );
 
-  const handleRowPress = (item) => {
+  const handleRowPress = async (item) => {
       // Update the selected row
   setSelectedRow(item);
 
@@ -65,6 +74,46 @@ const AdminSchools = () => {
 
     // Handle the row press, navigate to a new screen, etc.
     console.log('Row pressed:', item.name);
+
+    // Assuming you have a function to send the POST request
+    await createNewSchool();
+  };
+
+  const createNewSchool = async () => {
+    try {
+      const apiUrl = 'http://10.211.55.7:8000/schools'; // Update with your API endpoint
+  
+      const requestBody = {
+        access_role: 'Admin',
+        name: textInputValues.name,
+        street_address_line_1: textInputValues.street_address_line_1,
+        street_address_line_2: textInputValues.street_address_line_2,
+        suburb: textInputValues.suburb,
+        state: textInputValues.state,
+        postcode: textInputValues.postcode,
+        contact_name: textInputValues.contact_name,
+        contact_number: textInputValues.contact_number,
+        email_address: '', // Update this field as needed
+        paid: '0', // You may want to update this field based on your requirements
+      };
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+      if (response.ok) {
+        const responseData = await response.json();
+        console.log('New school created:', responseData);
+  
+        // Optionally, you can update the state or perform other actions after a successful creation
+      } else {
+        console.error('Error creating new school:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('Error creating new school:', error);
+    }
   };
 
   const renderRow = ({ item }) => (
@@ -78,7 +127,19 @@ const AdminSchools = () => {
     </TouchableOpacity>
   );
 
-
+  const handleClearFields = () => {
+    // Clear all text input values
+    setTextInputValues({
+      name: '',
+      street_address_line_1: '',
+      street_address_line_2: '',
+      suburb: '',
+      state: '',
+      postcode: '',
+      contact_name: '',
+      contact_number: '',
+    });
+  };
 
   return (
     <LinearGradient
@@ -164,10 +225,10 @@ const AdminSchools = () => {
                   <View style={styles.frame6}>
                     <Text style={styles.schoolList}>School list</Text>
                   </View>
-                  <View style={styles.adminSchoolsTableFrame}>
+                  <View style={styles.adminSchoolTableFrame}>
                     <FlatList
-                  style={[styles.adminFieldTable, styles.adminBorder2]}
-                  data={responseData}
+                  style={[styles.adminSchoolTable, styles.adminBorder2]}
+                  data={schoolsData}
                   renderItem={renderRow}
                   keyExtractor={(item) => item.school_id.toString()}
                   contentContainerStyle={
@@ -177,8 +238,8 @@ const AdminSchools = () => {
                   ListHeaderComponent={() => (
                   <View style={styles.columnHeaderContainer}>
                     {renderColumnHeader('Name')}
-                    {renderColumnHeader('Division')}
-                    {renderColumnHeader('Judge')}
+                    {renderColumnHeader('Contact Name')}
+                    {renderColumnHeader('Contact Number')}
                     {/* Add any other headers you want */}
                   </View>
                   )}
@@ -191,11 +252,16 @@ const AdminSchools = () => {
               </View>
             </View>
             <View style={styles.frame8}>
-              <View style={styles.frame9}>
-                <View style={styles.frame10}>
-                  <View style={styles.frame11}>
-                    <View style={styles.frame12}>
-                      <View style={styles.frame13}>
+              <View style={styles.frame9}
+              >
+                <View style={styles.frame10}
+                >
+                  <View style={styles.frame11}
+                  >
+                    <View style={styles.frame12}
+                    >
+                      <View style={styles.frame13}
+                      >
                         <View style={styles.frame14}>
                           <Text style={styles.schoolName}>School Name:</Text>
                           <Text style={styles.schoolName}>Contact Name:</Text>
@@ -204,32 +270,70 @@ const AdminSchools = () => {
                           <Text style={styles.schoolName}>Paid:</Text>
                         </View>
                       </View>
-                      <View style={styles.frame15}>
-                        <View style={styles.frame16}>
+                      <View //style={styles.frame15}
+                      >
+                        <View style={styles.frame16}
+                        >
                           <TextInput
                             style={styles.adminSchoolsNameTextField}
                             autoCapitalize="none"
+                            value={textInputValues.name}
+                            onChangeText={(text) =>
+                            setTextInputValues((prevValues) => ({
+                            ...prevValues,
+                            name: text,
+                            }))
+                          }
                           />
                           <TextInput
                             style={styles.adminSchoolsContactNameTex}
                             autoCapitalize="none"
+                            value={textInputValues.contact_name}
+                            onChangeText={(text) =>
+                            setTextInputValues((prevValues) => ({
+                            ...prevValues,
+                            contact_name: text,
+                            }))
+                          }
                           />
                           <TextInput
                             style={styles.adminSchoolsContactNameTex}
                             autoCapitalize="none"
+                            value={textInputValues.contact_number}
+                            onChangeText={(text) =>
+                            setTextInputValues((prevValues) => ({
+                            ...prevValues,
+                            contact_number: text,
+                            }))
+                          }
                           />
                           <TextInput
                             style={styles.adminSchoolsContactNameTex}
                             autoCapitalize="none"
+                            value={textInputValues.email_address}
+                            onChangeText={(text) =>
+                            setTextInputValues((prevValues) => ({
+                            ...prevValues,
+                            email_address: text,
+                            }))
+                          }
                           />
-                          <View style={styles.adminSchoolsPaidDropdown}>
+                          <View style={styles.adminSchoolsPaidDropdown}
+                          >
                             <DropDownPicker
                               style={styles.dropdownpicker}
                               open={adminSchoolsPaidDropdownOpen}
                               setOpen={setAdminSchoolsPaidDropdownOpen}
                               value={adminSchoolsPaidDropdownValue}
-                              setValue={setAdminSchoolsPaidDropdownValue}
-                              items={[]}
+                              setValue={(value) => {
+                                // Update the selected competition ID when an item is selected
+                                setPaidDropdownValue(value);
+                                updateSelectedPaidId(value);
+                              }}
+                              items={schoolsData.map((school) => ({
+                                label: `${school.paid}`,
+                                value: schools.school_id.toString(),
+                              }))}
                               dropDownContainerStyle={
                                 styles.adminSchoolsPaidDropdowndropDownContainer
                               }
@@ -254,14 +358,35 @@ const AdminSchools = () => {
                     <TextInput
                       style={styles.adminSchoolsNameTextField}
                       autoCapitalize="none"
+                      value={textInputValues.street_address_line_1}
+                            onChangeText={(text) =>
+                            setTextInputValues((prevValues) => ({
+                            ...prevValues,
+                            street_address_line_1: text,
+                            }))
+                          }
                     />
                     <TextInput
-                      style={styles.adminSchoolsContactNameTex}
+                      style={styles.adminSchoolsNameTextField}
                       autoCapitalize="none"
+                      value={textInputValues.street_address_line_2}
+                            onChangeText={(text) =>
+                            setTextInputValues((prevValues) => ({
+                            ...prevValues,
+                            street_address_line_2: text,
+                            }))
+                          }
                     />
                     <TextInput
-                      style={styles.adminSchoolsContactNameTex}
+                      style={styles.adminSchoolsNameTextField}
                       autoCapitalize="none"
+                      value={textInputValues.suburb}
+                            onChangeText={(text) =>
+                            setTextInputValues((prevValues) => ({
+                            ...prevValues,
+                            suburb: text,
+                            }))
+                          }
                     />
                     <View style={styles.adminSchoolsPaidDropdown}>
                       <DropDownPicker
@@ -277,8 +402,15 @@ const AdminSchools = () => {
                       />
                     </View>
                     <TextInput
-                      style={styles.adminSchoolsContactNameTex}
+                      style={styles.adminSchoolsNameTextField}
                       autoCapitalize="none"
+                      value={textInputValues.postcode}
+                            onChangeText={(text) =>
+                            setTextInputValues((prevValues) => ({
+                            ...prevValues,
+                            postcode: text,
+                            }))
+                          }
                     />
                   </View>
                 </View>
@@ -288,7 +420,9 @@ const AdminSchools = () => {
                   <View style={styles.frame21}>
                     <View style={styles.frame22}>
                       <View style={styles.frame23}>
-                        <Pressable style={styles.adminSchoolsCreateButton}>
+                        <Pressable style={styles.adminSchoolsCreateButton}
+                        onPress={createNewSchool}
+                        >
                           <Text style={styles.create}>Create</Text>
                         </Pressable>
                       </View>
@@ -309,7 +443,9 @@ const AdminSchools = () => {
                   >
                     <Text style={styles.create}>School Teams</Text>
                   </Pressable>
-                  <Pressable style={styles.adminSchoolsClearFieldsBut}>
+                  <Pressable style={styles.adminSchoolsClearFieldsBut}
+                  onPress={handleClearFields}
+                  >
                     <Text style={styles.clearFields}>Clear Fields</Text>
                   </Pressable>
                 </View>
@@ -327,6 +463,7 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     borderColor: "#000",
     borderWidth: 1,
+    flexbasis: "fit-content",
   },
   adminSchoolsStateDropdowndropDownContainer: {
     borderStyle: "solid",
@@ -502,46 +639,13 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "flex-start",
   },
-  adminSchoolsTable: {
-    alignSelf: "stretch",
-    flex: 1,
-    borderRadius: Border.br_9xs,
-    backgroundColor: Color.colorDarkslategray,
-    borderStyle: "solid",
-    borderColor: Color.colorDimgray,
-    borderWidth: 1,
-    overflow: "hidden",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    justifyContent: "flex-start",
-  },
-  adminSchoolTable: {
-    borderRadius: Border.br_9xs,
-    backgroundColor: Color.colorDarkslategray,
-    borderColor: Color.colorDimgray,
-    width: 575,
-    maxWidth: 575,
-    alignSelf: "stretch",
-    overflow: "hidden",
-    borderWidth: 1,
-    borderStyle: "solid",
-    flex: 1,
-  },
-  adminSchoolTableFrame: {
-    justifyContent: "flex-end",
-    alignSelf: "stretch",
-    overflow: "hidden",
-    flexDirection: "row",
-    height: "auto",
-    flex: 1,
-  },
   frame5: {
     flex: 1,
-    width: 598,
+    width: "100%",
     overflow: "hidden",
     flexDirection: "column",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
   },
   frame4: {
     alignSelf: "stretch",
@@ -575,7 +679,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     flexDirection: "column",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
   },
   schoolName: {
     alignSelf: "stretch",
@@ -592,14 +696,15 @@ const styles = StyleSheet.create({
   frame14: {
     alignSelf: "stretch",
     height: 125,
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "column",
     alignItems: "flex-end",
     justifyContent: "space-between",
   },
   frame13: {
     width: 112,
-    overflow: "hidden",
+    flex: 1,
+    overflow: "visible",
     flexDirection: "column",
     alignItems: "flex-end",
     justifyContent: "flex-start",
@@ -617,6 +722,7 @@ const styles = StyleSheet.create({
   adminSchoolsContactNameTex: {
     alignSelf: "stretch",
     flex: 1,
+    flexBasis: "fit-content",
     position: "relative",
     backgroundColor: Color.white,
     borderStyle: "solid",
@@ -628,43 +734,44 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     borderColor: Color.colorBlack,
     borderWidth: 1,
+    height: 10,
   },
   adminSchoolsPaidDropdown: {
-    alignSelf: "stretch",
-    flex: 1,
-    borderRadius: Border.br_5xs,
-    borderStyle: "solid",
-    overflow: "hidden",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 10,
+  alignSelf: "stretch",
+  borderRadius: Border.br_5xs,
+  borderStyle: "solid",
+  overflow: "hidden",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "flex-start",
   },
   frame16: {
     alignSelf: "stretch",
     flex: 1,
-    overflow: "hidden",
+    flexBasis: "fill",
+    overflow: "visible",
     flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "flex-start",
+    alignItems: "baseline",
+    justifyContent: "center",
   },
   frame15: {
     alignSelf: "stretch",
     flex: 1,
-    overflow: "hidden",
+    flexBasis: "auto",
+    overflow: "visible",
     flexDirection: "column",
     alignItems: "center",
-    justifyContent: "space-between",
     paddingHorizontal: Padding.p_0,
     paddingVertical: Padding.p_8xs,
   },
   frame12: {
     alignSelf: "stretch",
     width: 231,
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    flexBasis: "fit-content",
   },
   frame17: {
     alignSelf: "stretch",
@@ -674,11 +781,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-start",
     paddingRight: Padding.p_10xs,
+    flexbasis: "fit-content",
   },
   frame11: {
     alignSelf: "stretch",
     width: 399,
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -696,18 +804,21 @@ const styles = StyleSheet.create({
   frame10: {
     alignSelf: "stretch",
     flex: 1,
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingBottom: "10px",
+    flexBasis: "auto",
   },
   frame9: {
     alignSelf: "stretch",
-    height: 117,
+    flex: 1,
     overflow: "hidden",
     flexDirection: "column",
     alignItems: "flex-start",
     justifyContent: "center",
+    flexbasis: "fit-content",
   },
   create: {
     alignSelf: "stretch",
@@ -842,7 +953,7 @@ const styles = StyleSheet.create({
   },
   frame8: {
     alignSelf: "stretch",
-    height: 182,
+    flex: 1,
     overflow: "hidden",
     flexDirection: "column",
     alignItems: "center",
@@ -855,6 +966,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "flex-start",
+    flexbasis: "fit-content",
   },
   frame: {
     position: "absolute",
@@ -870,32 +982,55 @@ const styles = StyleSheet.create({
     flex: 1,
     position: "relative",
     height: 373,
+    flexBasis: "fit-content",
   },
   adminSchools: {
     position: "relative",
     flex: 1,
     width: "100%",
-    flexDirection: "row",
+    flexDirection: "column",
     flexWrap: "wrap",
     alignItems: "flex-start",
     justifyContent: "flex-start",
     padding: Padding.p_7xs,
     backgroundColor: Color.backGround,
   },
-  adminFields: {
-    width: "100%",
-    flexWrap: "wrap",
-    paddingHorizontal: Padding.p_7xs,
-    paddingVertical: Padding.p_6xs,
-    backgroundColor: Color.backGround,
+
+
+
+
+  adminFlexBox: {
+    flexDirection: "row",
+    flex: 1,
+  },
+  adminSchoolTableFrame: {
+    justifyContent: "flex-end",
+    alignSelf: "stretch",
+    overflow: "hidden",
+    flexDirection: "row",
+    height: "auto",
+    flex: 1,
+  },
+  adminSchoolTable: {
+    borderRadius: Border.br_9xs,
+    backgroundColor: Color.colorDarkslategray,
+    borderColor: Color.colorDimgray,
+    width: 575,
+    maxWidth: 575,
+    alignSelf: "stretch",
+    overflow: "hidden",
+    borderWidth: 1,
+    borderStyle: "solid",
+    flex: 1,
+  },
+  adminBorder2: {
+    borderWidth: 1,
+    borderStyle: "solid",
+    overflow: "hidden",
   },
   adminCompetitionTableFlatListContent: {
     flexDirection: "column",
     color: "white",
-  },
-  columnHeaderContainer: {
-    flexDirection: 'row',
-    paddingBottom: 10,
   },
   columnHeaderContainer: {
     flexDirection: 'row',

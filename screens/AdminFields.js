@@ -17,6 +17,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontFamily, FontSize, Padding } from "../GlobalStyles";
+import { BASE_URL, fieldsData, updateFieldsData } from "../GlobalVariables";
 
 const AdminFields = () => {
   const [adminFieldDropdownFrameOpen, setAdminFieldDropdownFrameOpen] =
@@ -35,10 +36,17 @@ const AdminFields = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://10.211.55.7:8000/fields');
+        const response = await fetch(`${BASE_URL}/fields`);
         const data = await response.json();
-        setResponseData(data.fields);
+        
+        if (data.error){
+          setError(data.error);
+        } else {
+          updateFieldsData(data.fields);
+        }
+
         console.log(data);
+
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -186,7 +194,7 @@ const AdminFields = () => {
             <View style={[styles.adminFieldTableFrame, styles.adminFlexBox]}>
               <FlatList
                   style={[styles.adminFieldTable, styles.adminBorder2]}
-                  data={responseData}
+                  data={fieldsData}
                   renderItem={renderRow}
                   keyExtractor={(item) => item.field_id.toString()}
                   contentContainerStyle={
@@ -255,15 +263,6 @@ const AdminFields = () => {
 const styles = StyleSheet.create({
   adminFieldTableFlatListContent: {
     flexDirection: "column",
-  },
-  adminFlexBox: {
-    flexDirection: "row",
-    flex: 1,
-  },
-  adminBorder2: {
-    borderWidth: 1,
-    borderStyle: "solid",
-    overflow: "hidden",
   },
   frameFlexBox1: {
     justifyContent: "center",
@@ -388,26 +387,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     alignItems: "center",
   },
-  adminFieldTable: {
-    borderRadius: Border.br_9xs,
-    backgroundColor: Color.colorDarkslategray,
-    borderColor: Color.colorDimgray,
-    width: 575,
-    maxWidth: 575,
-    alignSelf: "stretch",
-    overflow: "hidden",
-    borderWidth: 1,
-    borderStyle: "solid",
-    flex: 1,
-  },
-  adminFieldTableFrame: {
-    justifyContent: "flex-end",
-    alignSelf: "stretch",
-    overflow: "hidden",
-    flexDirection: "row",
-    height: "auto",
-    flex: 1,
-  },
   frame1: {
     height: 225,
     alignSelf: "stretch",
@@ -497,13 +476,40 @@ const styles = StyleSheet.create({
     paddingVertical: Padding.p_6xs,
     backgroundColor: Color.backGround,
   },
+
+
+  adminFlexBox: {
+    flexDirection: "row",
+    flex: 1,
+  },
+  adminFieldTableFrame: {
+    justifyContent: "flex-end",
+    alignSelf: "stretch",
+    overflow: "hidden",
+    flexDirection: "row",
+    height: "auto",
+    flex: 1,
+  },
+  adminFieldTable: {
+    borderRadius: Border.br_9xs,
+    backgroundColor: Color.colorDarkslategray,
+    borderColor: Color.colorDimgray,
+    width: 575,
+    maxWidth: 575,
+    alignSelf: "stretch",
+    overflow: "hidden",
+    borderWidth: 1,
+    borderStyle: "solid",
+    flex: 1,
+  },
+  adminBorder2: {
+    borderWidth: 1,
+    borderStyle: "solid",
+    overflow: "hidden",
+  },
   adminCompetitionTableFlatListContent: {
     flexDirection: "column",
     color: "white",
-  },
-  columnHeaderContainer: {
-    flexDirection: 'row',
-    paddingBottom: 10,
   },
   columnHeaderContainer: {
     flexDirection: 'row',
