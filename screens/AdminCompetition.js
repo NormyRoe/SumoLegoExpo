@@ -17,6 +17,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontFamily, FontSize, Padding } from "../GlobalStyles";
 import { BASE_URL, competitionsData, updateCompetitionsData, selectedCompetitionId, updateSelectedCompetitionId, accessRole } from "../GlobalVariables";
+import moment from 'moment';
 
 const AdminCompetition = () => {
   const [responseData, setResponseData] = useState(null);
@@ -39,6 +40,7 @@ const AdminCompetition = () => {
           if (data.error) {
             setError(data.error);
           } else {
+            console.log(data.competitions);
             updateCompetitionsData(data.competitions); // Update the global variable
           }
           
@@ -111,27 +113,53 @@ const AdminCompetition = () => {
 
     const handleCreateCompetition = async () => {
       try {
+        // Validate the date format
+        const isValidDate = moment(textInputValues.date, 'DD-MM-YYYY').isValid();
+
+        if (!isValidDate) {
+          // Display an error message to the user
+          window.alert('Invalid date format. Please enter the date in the format DD-MM-YYYY.');
+          return;
+        }
+
+        // Format the date using moment
+        const formattedDate = moment(textInputValues.date, 'DD-MM-YYYY').format('YYYY/MM/DD');        
+
         const response = await fetch(`${BASE_URL}/competitions`, {
           method: 'POST',
           headers: {
+            'Accept': 'application/json',
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             access_role: accessRole,
             name: textInputValues.name,
-            games_per_team: textInputValues.games_per_team,
-            date: textInputValues.date,
-            nbr_of_fields: textInputValues.fields_per_division,
+            games_per_team: parseInt(textInputValues.games_per_team),
+            date: formattedDate,
+            nbr_of_fields: parseInt(textInputValues.fields_per_division),
           }),
         });
       
         const data = await response.json();
      
         if (data.error) {
-          console.error('Error creating competition:', data.error);
+          window.alert(data.error);
         } else {
+
+          const newCompetitionId = data.competition_id; // Use the returned competition_id
+
           // Update competitionsData with the new competition data
-          updateCompetitionsData([...competitionsData, { competition_id: data.competition_id, ...textInputValues }]);
+          updateCompetitionsData([
+            ...competitionsData,
+            {
+              competition_id: newCompetitionId,
+              name: data.name,
+              games_per_team: data.games_per_team,
+              nbr_of_fields: data.nbr_of_fields,
+            },
+          ]);
+
+            
           // Clear text input values
           setTextInputValues({
             name: '',
@@ -141,7 +169,7 @@ const AdminCompetition = () => {
           });
         }
       } catch (error) {
-        console.error('Error creating competition:', error);
+        window.alert(error);
       }
     };
 
