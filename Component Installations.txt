@@ -27,6 +27,8 @@ sudo npm install formik
 
 sudo npm install expo-crypto
 
+sudo npm install moment
+
 sudo npm audit fix --force
 
 sudo npm audit fix --force
