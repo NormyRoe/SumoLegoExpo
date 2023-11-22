@@ -21,6 +21,8 @@ sudo npm install react-native-screens
 
 sudo npm install react-native-web
 
+sudo npm install react-native-elements
+
 sudo npm install rneui
 
 sudo npm install formik
@@ -28,6 +30,8 @@ sudo npm install formik
 sudo npm install expo-crypto
 
 sudo npm install moment
+
+sudo npm install axios
 
 sudo npm audit fix --force
 
