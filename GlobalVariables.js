@@ -8,7 +8,7 @@ export let selectedCompetitionId = null;
 
 export let divisionsData = [];
 
-export let selectedDivisionsId = null;
+export let selectedDivisionId = null;
 
 export let usersData = [];
 
@@ -31,6 +31,8 @@ export let gameResultsData = [];
 export let selectedGameResultId = null;
 
 export let accessRole = null;
+
+export let roundsData = [];
 
 
 export const updateCompetitionsData = (data) => {
@@ -100,3 +102,6 @@ export const updateAccessRole = (access_role) => {
     accessRole = access_role;
   };
 
+  export const updateRoundsData = (data) => {
+    roundsData = data;
+  };
