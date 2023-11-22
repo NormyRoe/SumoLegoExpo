@@ -4,52 +4,31 @@ export const BASE_URL = "http://172.20.10.6:8000";
 
 export let competitionsData = [];
 
-export let selectedCompetitionId = () => {
-
-  return selectedCompetitionId;
-};
+export let selectedCompetitionId;
 
 export let divisionsData = [];
 
-export let selectedDivisionId = () => {
-
-  return selectedDivisionId;
-};
+export let selectedDivisionId;
 
 export let usersData = [];
 
-export let selectedUserId = () => {
-
-  return selectedUserId;
-};
+export let selectedUserId;
 
 export let fieldsData = [];
 
-export let selectedFieldId = () => {
-
-  return selectedFieldId;
-};
+export let selectedFieldId;
 
 export let schoolsData = [];
 
-export let selectedSchoolId = () => {
-
-  return selectedSchoolId;
-};
+export let selectedSchoolId;
 
 export let teamsData = [];
 
-export let selectedTeamId = () => {
-
-  return selectedTeamId;
-};
+export let selectedTeamId;
 
 export let gameResultsData = [];
 
-export let selectedGameResultId = () => {
-
-  return selectedGameResultId;
-};
+export let selectedGameResultId;
 
 export let accessRole = null;
 
