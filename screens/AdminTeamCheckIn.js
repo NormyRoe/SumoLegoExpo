@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Image } from "expo-image";
 import {
   StyleSheet,
@@ -7,26 +7,158 @@ import {
   View,
   FlatList,
   TextInput,
+  TouchableOpacity,
 } from "react-native";
 import Row38 from "../components/Row38";
 import Row37 from "../components/Row37";
 import Row36 from "../components/Row36";
 import Row35 from "../components/Row35";
-import { CheckBox } from "@rneui/themed";
+//import { CheckBox } from "@rneui/themed";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
+import { CheckBox } from 'react-native-elements';
 import { Color, Border, Padding, FontFamily, FontSize } from "../GlobalStyles";
+import { BASE_URL, accessRole, selectedCompetitionId, selectedTeamId, teamsData, updateSelectedDivisionId, updateSelectedTeamId, updateTeamsData } from "../GlobalVariables";
 
 const AdminTeamCheckIn = () => {
-  const [
-    adminTeamCheckinTableFlatListData,
-    setAdminTeamCheckinTableFlatListData,
-  ] = useState([<Row38 />, <Row37 />, <Row36 />, <Row35 />]);
-  const [
-    adminTeamCheckinTeamCheckchecked,
-    setAdminTeamCheckinTeamCheckchecked,
-  ] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [textInputValues, setTextInputValues] = useState({
+    name: '',
+  });
+  const [isChecked, setChecked] = useState(false);
+
   const navigation = useNavigation();
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  console.log(selectedCompetitionId);
+
+  useEffect(() => {
+    const fetchTeamData = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/teams`);
+        const data = await response.json();
+
+        if (data.error) {
+          setError(data.error);
+        } else {
+          updateTeamsData(data.teams); // Update the global variable
+        }
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTeamData();
+  }, []);
+
+  const renderColumnHeader = (header) => (
+    <View style={styles.columnHeader}>
+      <Text style={styles.columnHeaderText}>{header}</Text>
+    </View>
+  );
+
+  const handleRowPress = (item) => {
+    // Update the selected row
+  setSelectedRow(item);
+
+  // Set the selected team ID
+  updateSelectedTeamId(item.team_id);
+
+  let selectedDivision_id = '';
+  if (item.division === "Science"){
+    selectedDivision_id = '1';
+    updateSelectedDivisionId(selectedDivision_id);
+    console.log(selectedDivision_id);
+  }
+  else if (item.division === "Technology"){
+    selectedDivision_id = '2';
+    updateSelectedDivisionId(selectedDivision_id);
+    console.log(selectedDivision_id);
+  }
+  else if (item.division === "Engineering"){
+    selectedDivision_id = '3';
+    updateSelectedDivisionId(selectedDivision_id);
+    console.log(selectedDivision_id);
+  }
+  else if (item.division === "Math"){
+    selectedDivision_id = '4';
+    updateSelectedDivisionId(selectedDivision_id);
+    console.log(selectedDivision_id);
+  }
+  console.log(selectedCompetitionId);
+
+  updateSelectedDivisionId()
+
+  // Populate text input values with the selected row's data
+  setTextInputValues({
+    name: item.name,
+    school: item.school,
+    date: item.date,
+  });
+
+  // Handle the row press, navigate to a new screen, etc.
+  console.log('Row pressed:', item.name);
+  };
+
+const renderRow = ({ item }) => (
+  <TouchableOpacity onPress={() => handleRowPress(item)}>
+    <View style={styles.row}>
+      <Text style={[styles.rowText, { color: 'white' }]}>{item.name}</Text>
+      <Text style={[styles.rowText, { color: 'white' }]}>{item.school}</Text>
+      <Text style={[styles.rowText, { color: 'white' }]}>{item.date}</Text>
+      {/* Add any other fields you want to display */}
+    </View>
+  </TouchableOpacity>
+);
+
+
+const handleTeamCheckIn = async (selectedDivision_id) => {
+  try{
+
+    let teamCheckedIn = '';
+    if (isChecked == false){
+        teamCheckedIn = '0';
+    } 
+    else if (isChecked == true) {
+        teamCheckedIn = '1';
+    }
+  
+
+
+    const response = await fetch(`${BASE_URL}/checkin/${selectedCompetitionId}`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        access_role: accessRole,
+        division_id: selectedDivision_id,
+        team_id: selectedTeamId,
+        checked_in: teamCheckedIn,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.error){
+      console.log(data.error);
+      window.alert(data.error);
+    } else {
+      const teamCheckedIn = data.Checked_In_id;
+
+    }
+  } catch (error) {
+    console.log(error);
+    window.alert(error);
+  }
+};
+
+
 
   return (
     <LinearGradient
@@ -135,11 +267,21 @@ const AdminTeamCheckIn = () => {
               <View style={styles.adminTeamCheckinTableFrame}>
                 <FlatList
                   style={[styles.adminTeamCheckinTable, styles.adminBorder3]}
-                  data={adminTeamCheckinTableFlatListData}
-                  renderItem={({ item }) => item}
+                  data={teamsData}
+                  renderItem={renderRow}
+                  keyExtractor={(item) => item.team_id.toString()}
                   contentContainerStyle={
                     styles.adminTeamCheckinTableFlatListContent
                   }
+
+                  ListHeaderComponent={() => (
+                    <View style={styles.columnHeaderContainer}>
+                      {renderColumnHeader('Name')}
+                      {renderColumnHeader('Games Per Team')}
+                      {renderColumnHeader('Date')}
+                      {/* Add any other headers you want */}
+                    </View>
+                  )}
                 />
               </View>
             </View>
@@ -161,20 +303,17 @@ const AdminTeamCheckIn = () => {
                         styles.adminBorder2,
                       ]}
                       autoCapitalize="none"
+                      value={selectedRow ? selectedRow.name : ''}
+                      onChangeText={(text) => setTextInputValues({ ...textInputValues, name: text })}
                     />
                     <CheckBox
-                      style={[
-                        styles.adminTeamCheckinTeamCheck,
-                        styles.adminBorder2,
-                      ]}
-                      checked={adminTeamCheckinTeamCheckchecked}
-                      onPress={() =>
-                        setAdminTeamCheckinTeamCheckchecked(
-                          !adminTeamCheckinTeamCheckchecked
-                        )
-                      }
-                      checkedColor="#fff"
+                      checked={isChecked}
+                      onPress={() => setChecked(!isChecked)}
                       containerStyle={styles.adminTeamCheckinTeamCheckLayout}
+                      iconType="material" // Set the icon type
+                      checkedIcon="check-box" // Specify the checked icon (tick)
+                      uncheckedIcon="check-box-outline-blank" // Specify the unchecked icon
+                      checkedColor="green"
                     />
                   </View>
                 </View>
@@ -185,6 +324,7 @@ const AdminTeamCheckIn = () => {
                     styles.adminTeamCheckinSubmitButt,
                     styles.adminBorder,
                   ]}
+                  onPress={handleTeamCheckIn}
                 >
                   <Text style={[styles.submit, styles.submitTypo]}>Submit</Text>
                 </Pressable>
@@ -470,6 +610,37 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flex: 1,
   },
+
+  columnHeaderContainer: {
+    flexDirection: 'row',
+    paddingBottom: 10,
+  },
+  columnHeader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#DDDDDD',
+    padding: 10,
+  },
+  columnHeaderText: {
+    fontWeight: 'bold',
+  },
+  row: {
+    flexDirection: 'row',
+    paddingBottom: 10,
+  },
+  rowText: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#DDDDDD',
+  },
+  selectedRow: {
+    backgroundColor: 'blue', // Adjust the color as needed
+  },
+
 });
 
 export default AdminTeamCheckIn;

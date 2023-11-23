@@ -27,6 +27,8 @@ const AdminSchools = () => {
   
     const navigation = useNavigation();
 
+    const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -43,6 +45,8 @@ const AdminSchools = () => {
       } catch (error) {
         console.error('Error fetching data:', error);
         setError("An error occured while feaching schools");
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -70,13 +74,11 @@ const AdminSchools = () => {
     postcode: item.postcode,
     contact_name: item.contact_name,
     contact_number: item.contact_number,
+    email_address: item.email_address,
   });
 
     // Handle the row press, navigate to a new screen, etc.
     console.log('Row pressed:', item.name);
-
-    // Assuming you have a function to send the POST request
-    await createNewSchool();
   };
 
   const createNewSchool = async () => {
@@ -93,7 +95,7 @@ const AdminSchools = () => {
         postcode: textInputValues.postcode,
         contact_name: textInputValues.contact_name,
         contact_number: textInputValues.contact_number,
-        email_address: '', // Update this field as needed
+        email_address: textInputValues.email_address,
         paid: '0', // You may want to update this field based on your requirements
       };
       const response = await fetch(apiUrl, {
@@ -133,6 +135,7 @@ const AdminSchools = () => {
       name: '',
       street_address_line_1: '',
       street_address_line_2: '',
+      email_address: '',
       suburb: '',
       state: '',
       postcode: '',
@@ -332,7 +335,7 @@ const AdminSchools = () => {
                               }}
                               items={schoolsData.map((school) => ({
                                 label: `${school.paid}`,
-                                value: schools.school_id.toString(),
+                                value: school.school_id.toString(),
                               }))}
                               dropDownContainerStyle={
                                 styles.adminSchoolsPaidDropdowndropDownContainer

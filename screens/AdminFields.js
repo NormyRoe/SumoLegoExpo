@@ -17,43 +17,48 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontFamily, FontSize, Padding } from "../GlobalStyles";
-import { BASE_URL, fieldsData, updateFieldsData } from "../GlobalVariables";
+import { BASE_URL, divisionsData, fieldsData, updateDivisionsData, updateFieldsData, updateSelectedFieldId } from "../GlobalVariables";
 
 const AdminFields = () => {
-  const [adminFieldDropdownFrameOpen, setAdminFieldDropdownFrameOpen] =
-    useState(false);
-  const [adminFieldDropdownFrameValue, setAdminFieldDropdownFrameValue] =
-    useState();
-
-    const [responseData, setResponseData] = useState(null);
+const [adminFieldDropdownFrameOpen, setAdminFieldDropdownFrameOpen] =
+  useState(false);
+  console.log("hi 1");
+const [adminFieldDropdownFrameValue, setAdminFieldDropdownFrameValue] =
+  useState();
+  console.log("hi 2");
     const [selectedRow, setSelectedRow] = useState(null);
     const [textInputValues, setTextInputValues] = useState({
       name: '',
     });
+    console.log("hi3");
 
   const navigation = useNavigation();
+
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(`${BASE_URL}/fields`);
         const data = await response.json();
-        
-        if (data.error){
+        console.log("hi 4");
+        if (data.error) {
           setError(data.error);
+          console.log("hi 5");
         } else {
           updateFieldsData(data.fields);
+          console.log("hi 6");
         }
-
-        console.log(data);
-
       } catch (error) {
         console.error('Error fetching data:', error);
+        setError('Error fetching data');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, []);  
 
   const renderColumnHeader = (header) => (
     <View style={styles.columnHeader}>
@@ -64,6 +69,9 @@ const AdminFields = () => {
   const handleRowPress = (item) => {
       // Update the selected row
   setSelectedRow(item);
+
+  // Set the selected competition ID
+  updateSelectedFieldId(item.field_id);
 
   // Populate text input values with the selected row's data
   setTextInputValues({
@@ -194,7 +202,7 @@ const AdminFields = () => {
             <View style={[styles.adminFieldTableFrame, styles.adminFlexBox]}>
               <FlatList
                   style={[styles.adminFieldTable, styles.adminBorder2]}
-                  data={fieldsData}
+                  data={fieldsData ?? []}
                   renderItem={renderRow}
                   keyExtractor={(item) => item.field_id.toString()}
                   contentContainerStyle={
@@ -228,8 +236,23 @@ const AdminFields = () => {
                 open={adminFieldDropdownFrameOpen}
                 setOpen={setAdminFieldDropdownFrameOpen}
                 value={adminFieldDropdownFrameValue}
-                setValue={setAdminFieldDropdownFrameValue}
-                items={[]}
+                setValue={(value) => {
+                  // Update the selected field ID when an item is selected
+                  setAdminFieldDropdownFrameValue(value);
+                  updateSelectedFieldId(value);
+                  console.log("hi 11");
+                }}
+                
+                items={divisionsData?.map((division) => ({
+                  label: `${division.name}`,
+                  value: division.division_id.toString(),
+                }))}
+                
+                onChangeItem={(item) => {
+                  console.log("Selected Division: ", item.value);
+                  console.log("hi 10");
+                }}
+
               />
             </View>
             <View style={[styles.frame7, styles.frameFlexBox]}>
@@ -420,7 +443,7 @@ const styles = StyleSheet.create({
     height: 25,
   },
   adminFieldDropdownFrame: {
-    height: 20,
+    flex: 1,
   },
   fieldNameWill: {
     lineHeight: 16,
