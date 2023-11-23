@@ -1,6 +1,6 @@
 // GlobalVariables.js
 
-export const BASE_URL = "http://172.20.10.6:8000";
+export const BASE_URL = "http://192.168.1.106:8000";
 
 export let competitionsData = [];
 
@@ -42,6 +42,8 @@ export const updateCompetitionsData = (data) => {
 export const updateSelectedCompetitionId = (id) => {
     selectedCompetitionId = id;
   };
+
+export const getSelectedCompetitionId = () => selectedCompetitionId;
 
 
 export const updateDivisionsData = (data) => {
