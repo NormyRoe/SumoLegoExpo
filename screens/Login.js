@@ -149,19 +149,20 @@ const Login = () => {
                     setLoginCompetitionsDropdownValue(value);
                     updateSelectedCompetitionId(value);
                   }}
+                  onChangeItem={(item) => {
+                    setLoginCompetitionsDropdownValue(item.value);
+                    updateSelectedCompetitionId(item.value);
+                    console.log("Selected Competition: ", item.value);
+                  }}
                   placeholder="Competitions"
                   items={competitionsData.map((competition) => ({
                     label: `${competition.name} (${competition.date})`,
-                    value: competition.competition_id.toString(),
+                    value: competition.competition_id,
                   }))}
                   labelStyle={styles.loginCompetitionsDropdownValue}
                   dropDownContainerStyle={
                     styles.loginCompetitionsDropdowndropDownContainer
                   }
-                  onChangeItem={(item) => {
-                    console.log("Selected Competition: ", item.value);
-                  }}
-                    
                 />           
               </View>
             </View>
@@ -207,6 +208,7 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     borderColor: "#000",
     borderWidth: 1,
+    overflow: "visible"
     // zIndex: 1000,
   },
   loginFlexBox1: {
@@ -290,23 +292,23 @@ const styles = StyleSheet.create({
   loginCompetitionsDropdown: {
     borderRadius: Border.br_5xs,
     height: 41,
-    // overflow: "hidden",
+    overflow: "visible",
   },
   loginInputs: {
     height: 123,
     marginTop: 36,
-    overflow: "hidden",
+    overflow: "visible",
   },
   loginInputsAndImage: {
     marginTop: -125,
-    overflow: "hidden",
+    overflow: "visible",
     flex: 1,
     alignSelf: "stretch",
   },
   loginInputsImageAndTitle: {
     height: 623,
     justifyContent: "center",
-    overflow: "hidden",
+    overflow: "visible",
   },
   login1: {
     display: "flex",
@@ -332,7 +334,7 @@ const styles = StyleSheet.create({
   },
   loginButtons: {
     height: 153,
-    overflow: "hidden",
+    overflow: "visible",
   },
   loginFame2: {
     justifyContent: "space-between",

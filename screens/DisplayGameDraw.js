@@ -5,6 +5,21 @@ import DisplayGameDrawTable from "../components/DisplayGameDrawTable";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Padding, Border, Color, FontSize, FontFamily } from "../GlobalStyles";
+import { useEffect } from "react";
+import axios from "axios";
+import {
+  BASE_URL,
+  gameResultsData,
+  updateGameResultsData,
+  updateDivisionsData,
+  divisionsData,
+  updateFieldsData,
+  fieldsData,
+  updateRoundsData,
+  roundsData,
+  selectedCompetitionId,
+  getSelectedCompetitionId,
+} from "../GlobalVariables";
 
 const DisplayGameDraw = () => {
   const [dropdownMenuOpen, setDropdownMenuOpen] = useState(false);
@@ -19,6 +34,63 @@ const DisplayGameDraw = () => {
   ] = useState([<DisplayGameDrawTable />]);
 
   const navigation = useNavigation();
+  console.log("Hi 1");
+  console.log(getSelectedCompetitionId());
+
+  const fetchData = async () => {
+    try {
+      const competitionId = getSelectedCompetitionId();
+      console.log('Competition ID:', competitionId);
+      
+      const response = await axios.get(`${BASE_URL}/gameresult/competition/${competitionId}`);
+      const { Game_Results, error } = response.data;
+
+      console.log(`${BASE_URL}/gameresult/competition/${competitionId}`);
+  
+      if (error) {
+        console.error("Server Error:", error);
+      } else {
+        updateGameResultsData(Game_Results);
+  
+        const uniqueDivisions = [...new Set(Game_Results.map((result) => result.division))];
+        const uniqueFields = [...new Set(Game_Results.map((result) => result.field))];
+        const uniqueRounds = [...new Set(Game_Results.map((result) => result.round))];
+  
+        updateDivisionsData(uniqueDivisions);
+        updateFieldsData(uniqueFields);
+        updateRoundsData(uniqueRounds);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error.message);
+    }
+  };
+
+  console.log("Hi 2");
+
+  useEffect(() => {
+    fetchData();
+  }, [selectedCompetitionId]);
+
+  console.log("Hi 3");
+
+  const handleDivisionChange = (value) => {
+    // Filter gameResultsData based on selected division
+    const filteredResults = gameResultsData.filter((result) => result.division === value);
+    setDisplayGameDrawTableFrameFlatListData(filteredResults);
+  };
+  
+  const handleFieldChange = (value) => {
+    // Filter gameResultsData based on selected field
+    const filteredResults = gameResultsData.filter((result) => result.field === value);
+    setDisplayGameDrawTableFrameFlatListData(filteredResults);
+  };
+  
+  const handleRoundChange = (value) => {
+    // Filter gameResultsData based on selected round
+    const filteredResults = gameResultsData.filter((result) => result.round === value);
+    setDisplayGameDrawTableFrameFlatListData(filteredResults);
+  };
+
 
   return (
     <LinearGradient
@@ -50,9 +122,10 @@ const DisplayGameDraw = () => {
                   value={dropdownMenuValue}
                   setValue={setDropdownMenuValue}
                   placeholder="Division"
-                  items={[]}
+                  items={divisionsData.map((division) => ({ label: division, value: division }))}
                   labelStyle={styles.dropdownMenuValue}
                   dropDownContainerStyle={styles.dropdownMenudropDownContainer}
+                  onChangeValue={handleDivisionChange}
                 />
               </View>
               <View
@@ -65,9 +138,10 @@ const DisplayGameDraw = () => {
                   value={dropdownMenu1Value}
                   setValue={setDropdownMenu1Value}
                   placeholder="Field"
-                  items={[]}
+                  items={fieldsData.map((field) => ({ label: field, value: field }))}
                   labelStyle={styles.dropdownMenu1Value}
                   dropDownContainerStyle={styles.dropdownMenu1dropDownContainer}
+                  onChangeValue={handleFieldChange}
                 />
               </View>
             </View>
@@ -80,9 +154,10 @@ const DisplayGameDraw = () => {
                   value={dropdownMenu2Value}
                   setValue={setDropdownMenu2Value}
                   placeholder="Round"
-                  items={[]}
+                  items={roundsData.map((round) => ({ label: round, value: round }))}
                   labelStyle={styles.dropdownMenu2Value}
                   dropDownContainerStyle={styles.dropdownMenu2dropDownContainer}
+                  onChangeValue={handleRoundChange}
                 />
               </View>
               <View
@@ -100,8 +175,17 @@ const DisplayGameDraw = () => {
           </View>
           <FlatList
             style={styles.displayGameDrawTableFrame}
-            data={displayGameDrawTableFrameFlatListData}
-            renderItem={({ item }) => item}
+            data={gameResultsData}
+            renderItem={({ item }) => (
+              <DisplayGameDrawTable
+                redTeam={item.team1}
+                vs="VS"
+                blueTeam={item.team2}
+                division={item.division}
+                field={item.field}
+                round={item.round}
+              />
+            )}
             contentContainerStyle={
               styles.displayGameDrawTableFrameFlatListContent
             }
