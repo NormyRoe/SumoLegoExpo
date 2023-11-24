@@ -85,7 +85,6 @@ const AdminCompetition = () => {
           <Text style={[styles.rowText, { color: 'white' }]}>{item.name}</Text>
           <Text style={[styles.rowText, { color: 'white' }]}>{item.games_per_team}</Text>
           <Text style={[styles.rowText, { color: 'white' }]}>{item.date}</Text>
-          <Text style={[styles.rowText, { color: 'white' }]}>{item.nbr_of_fields}</Text>
           {/* Add any other fields you want to display */}
         </View>
       </TouchableOpacity>
