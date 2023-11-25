@@ -25,8 +25,9 @@ const Login = () => {
   const [loginCompetitionsDropdownOpen, setLoginCompetitionsDropdownOpen] =
     useState(false);
   const [loginCompetitionsDropdownValue, setLoginCompetitionsDropdownValue] =
-    useState();  
+    useState(null);  
   const navigation = useNavigation();
+  
 
 
   useEffect(() => {
@@ -40,6 +41,7 @@ const Login = () => {
           setError(data.error);
         } else {
           updateCompetitionsData(data.competitions); // Update the global variable
+          console.log(competitionsData);
         }
       } catch (error) {
         console.error("Error fetching competitions:", error);
@@ -137,22 +139,22 @@ const Login = () => {
                 style={[
                   styles.loginCompetitionsDropdown,
                   styles.passwordTextboxSpaceBlock,
-                ]}
-              >
+                ]}                
+              >              
                 <DropDownPicker
                   style={styles.dropdownpicker}
                   open={loginCompetitionsDropdownOpen}
                   setOpen={setLoginCompetitionsDropdownOpen}
                   value={loginCompetitionsDropdownValue}
                   setValue={(value) => {
-                    // Update the selected competition ID when an item is selected
                     setLoginCompetitionsDropdownValue(value);
                     updateSelectedCompetitionId(value);
                   }}
-                  onChangeItem={(item) => {
-                    setLoginCompetitionsDropdownValue(item.value);
+                  onSelectItem={(item) => {
+                    console.log("onSelectItem triggered");
                     updateSelectedCompetitionId(item.value);
                     console.log("Selected Competition: ", item.value);
+                    console.log(selectedCompetitionId);
                   }}
                   placeholder="Competitions"
                   items={competitionsData.map((competition) => ({
