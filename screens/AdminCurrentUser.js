@@ -1,12 +1,65 @@
-import * as React from "react";
+import React, { useEffect, useState } from "react";
 import { Image } from "expo-image";
 import { StyleSheet, Pressable, Text, View, TextInput } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, Padding, FontSize, FontFamily } from "../GlobalStyles";
+import { BASE_URL, usersData, userusername, updateTeamsData, updateUsersData } from "../GlobalVariables";
 
 const AdminCurrentUser = () => {
+
+
+  const [textInputValues, setTextInputValues] = useState({
+    first_name: '',
+    surname: '',
+    email_address: '',
+    username: '',
+  });
+
   const navigation = useNavigation();
+
+  useEffect(() => {
+    // Fetch competitions data upon component mount
+    const fetchUsersData = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/users`);
+        const data = await response.json();
+        console.log(data);
+
+        if (data.error) {
+          setError(data.error);
+        } else {
+          updateUsersData(data.users); // Update the global variable
+          console.log(usersData);
+
+          const filteredUser = usersData.filter((user) => user.username == userusername);
+          console.log(filteredUser);
+          
+          handleInputFields(filteredUser);
+
+        }
+      } catch (error) {
+        console.error("Error fetching Users:", error);
+        setError("An error occurred while fetching Users.");
+      }
+    };
+
+    fetchUsersData();
+    
+        
+
+  }, []); // Empty dependency array ensures this effect runs only once on component mount
+
+const handleInputFields = async (filteredUser) => {
+  // Populate text input values with the selected row's data
+  setTextInputValues({
+    first_name: filteredUser.first_name,
+    surname: filteredUser.surname,
+    email_address: filteredUser.email_address,
+    username: filteredUser.username,
+  });
+}
+
 
   return (
     <LinearGradient
@@ -113,6 +166,13 @@ const AdminCurrentUser = () => {
                 <TextInput
                   style={styles.adminCurrentUserFirstName}
                   autoCapitalize="none"
+                  value={textInputValues.first_name}
+                  onChangeText={(text) =>
+                    setTextInputValues((prevValues) => ({
+                    ...prevValues,
+                    first_name: text,
+                    }))
+                  }
                 />
               </View>
             </View>
@@ -122,6 +182,13 @@ const AdminCurrentUser = () => {
                 <TextInput
                   style={styles.adminCurrentUserFirstName}
                   autoCapitalize="none"
+                  value={textInputValues.surname}
+                  onChangeText={(text) =>
+                    setTextInputValues((prevValues) => ({
+                    ...prevValues,
+                    surname: text,
+                    }))
+                  }
                 />
               </View>
             </View>
@@ -131,6 +198,13 @@ const AdminCurrentUser = () => {
                 <TextInput
                   style={styles.adminCurrentUserFirstName}
                   autoCapitalize="none"
+                  value={textInputValues.email_address}
+                  onChangeText={(text) =>
+                    setTextInputValues((prevValues) => ({
+                    ...prevValues,
+                    email_address: text,
+                    }))
+                  }
                 />
               </View>
             </View>
@@ -140,6 +214,13 @@ const AdminCurrentUser = () => {
                 <TextInput
                   style={styles.adminCurrentUserFirstName}
                   autoCapitalize="none"
+                  value={textInputValues.username}
+                    onChangeText={(text) =>
+                    setTextInputValues((prevValues) => ({
+                    ...prevValues,
+                    username: text,
+                    }))
+                  }
                 />
               </View>
             </View>
@@ -149,6 +230,12 @@ const AdminCurrentUser = () => {
                 <TextInput
                   style={styles.adminCurrentUserFirstName}
                   autoCapitalize="none"
+                  onChangeText={(text) =>
+                    setTextInputValues((prevValues) => ({
+                    ...prevValues,
+                    email_address: text,
+                    }))
+                  }
                 />
               </View>
             </View>
@@ -158,6 +245,12 @@ const AdminCurrentUser = () => {
                 <TextInput
                   style={styles.adminCurrentUserFirstName}
                   autoCapitalize="none"
+                  onChangeText={(text) =>
+                    setTextInputValues((prevValues) => ({
+                    ...prevValues,
+                    email_address: text,
+                    }))
+                  }
                 />
               </View>
             </View>
