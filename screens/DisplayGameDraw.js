@@ -18,7 +18,6 @@ import {
   updateRoundsData,
   roundsData,
   selectedCompetitionId,
-  getSelectedCompetitionId,
 } from "../GlobalVariables";
 
 const DisplayGameDraw = () => {
@@ -35,12 +34,12 @@ const DisplayGameDraw = () => {
 
   const navigation = useNavigation();
   console.log("Hi 1");
-  console.log(getSelectedCompetitionId());
+  console.log("GameDraw selectedCompetitionId:", selectedCompetitionId);
+  const competitionId = selectedCompetitionId;
+  console.log('GameDraw Competition ID:', competitionId);
 
   const fetchData = async () => {
-    try {
-      const competitionId = getSelectedCompetitionId();
-      console.log('Competition ID:', competitionId);
+    try {      
       
       const response = await axios.get(`${BASE_URL}/gameresult/competition/${competitionId}`);
       const { Game_Results, error } = response.data;

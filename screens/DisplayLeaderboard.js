@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Text, StyleSheet, Pressable, View, FlatList } from "react-native";
 import Row3 from "../components/Row3";
 import Row2 from "../components/Row2";
@@ -8,11 +8,31 @@ import Row from "../components/Row";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { FontFamily, FontSize, Color, Border, Padding } from "../GlobalStyles";
+import {
+  BASE_URL,
+  gameResultsData,
+  updateGameResultsData,
+  updateDivisionsData,
+  divisionsData,
+  updateFieldsData,
+  fieldsData,
+  updateRoundsData,
+  roundsData,  
+  selectedCompetitionId,
+} from "../GlobalVariables";
 
 const DisplayLeaderboard = () => {
   const [adminTeamsTableFlatListData, setAdminTeamsTableFlatListData] =
     useState([<Row3 />, <Row2 />, <Row1 />, <Row4 />, <Row />]);
   const navigation = useNavigation();
+  const competitionId = selectedCompetitionId;
+  console.log('Leaderboard Competition ID:', competitionId);
+
+  useEffect(() => {
+    // Now you can use selectedCompetitionId in your component
+    console.log('Leaderboard Selected Competition ID:', selectedCompetitionId);
+  }, [selectedCompetitionId]);
+
 
   return (
     <LinearGradient

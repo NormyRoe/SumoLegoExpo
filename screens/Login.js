@@ -14,7 +14,16 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { FontSize, FontFamily, Padding, Color, Border } from "../GlobalStyles";
 import * as Crypto from 'expo-crypto';
-import { BASE_URL, competitionsData, updateCompetitionsData, selectedCompetitionId, updateSelectedCompetitionId, updateAccessRole } from "../GlobalVariables";
+import { 
+  BASE_URL, 
+  competitionsData,
+  selectedCompetitionId,
+  updateCompetitionsData, 
+  updateSelectedCompetitionId, 
+  updateAccessRole, 
+  accessRole,
+  userName,
+  updateUserName} from "../GlobalVariables";
 
 
 
@@ -28,7 +37,6 @@ const Login = () => {
     useState(null);  
   const navigation = useNavigation();
   
-
 
   useEffect(() => {
     // Fetch competitions data upon component mount
@@ -54,6 +62,10 @@ const Login = () => {
 
   }, []); // Empty dependency array ensures this effect runs only once on component mount
 
+  //useEffect(() => {
+  //  console.log("Competition ID before navigation", getSelectedCompetitionId());
+  //}, [getSelectedCompetitionId()]);
+
 
   const handleLogin = async () => {
     try {
@@ -69,17 +81,24 @@ const Login = () => {
 
       updateAccessRole(data.role);
 
+      // save the username to the global variable
+      updateUserName(username);
+      console.log("Username is:", userName);
+
       if (data.role) {
         // If role is Admin or Judge, redirect accordingly
         if (data.role === "Admin") {
-          navigation.navigate("Admin");
+          console.log("Access Role before navigation:", accessRole);
+          navigation.navigate("Admin");          
         } else if (data.role === "Judge") {
           
           // Check if a competition is selected
-          if (!selectedCompetitionId) {
+          if (selectedCompetitionId == 0) {
             window.alert("Please select a competition.");
             return;
           }
+          console.log("Competition ID before navigation - Judge:", selectedCompetitionId);
+          console.log("Access Role before navigation:", accessRole);
           navigation.navigate("JudgeGameDraw");
         }
       } else if (data.error) {
@@ -148,7 +167,6 @@ const Login = () => {
                   value={loginCompetitionsDropdownValue}
                   setValue={(value) => {
                     setLoginCompetitionsDropdownValue(value);
-                    updateSelectedCompetitionId(value);
                   }}
                   onSelectItem={(item) => {
                     console.log("onSelectItem triggered");
@@ -182,10 +200,11 @@ const Login = () => {
             underlayColor="#fff"
             activeOpacity={0.2}
             onPress={() => {
-              if (!selectedCompetitionId) {
+              console.log("Competition ID before navigation - Live Scores", selectedCompetitionId);
+              if (selectedCompetitionId == 0) {
                 window.alert("Please select a competition.");
-              } else {
-                navigation.navigate("DisplayLeaderboard");
+              } else {                
+                navigation.navigate("DisplayLeaderboard");                
               }
             }}
           >
