@@ -32,6 +32,8 @@ export let selectedGameResultId = 0;
 
 export let accessRole = "";
 
+export let userName = "";
+
 export let roundsData = [];
 
 
@@ -98,6 +100,10 @@ export const updateSelectedGameResultId = (id) => {
   
 export const updateAccessRole = (access_role) => {
     accessRole = access_role;
+  };
+
+export const updateUserName = (username) => {
+    userName = username;
   };
 
   export const updateRoundsData = (data) => {
