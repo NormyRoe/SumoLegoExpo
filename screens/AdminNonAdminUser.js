@@ -15,13 +15,80 @@ import Row8 from "../components/Row8";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontFamily, FontSize, Padding } from "../GlobalStyles";
+import { updateSelectedUserId, updateUsersData } from "../GlobalVariables";
 
 const AdminNonAdminUser = () => {
   const [
     adminNonAdminUserTableFlatListData,
     setAdminNonAdminUserTableFlatListData,
   ] = useState([<Row111 />, <Row10 />, <Row9 />, <Row8 />]);
+
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [textInputValues, setTextInputValues] = useState({
+    name: '',
+    games_per_team: '',
+    date: '',
+    fields_per_division: '',
+  });
+
   const navigation = useNavigation();
+
+  useEffect(() => {
+    const fetchUsersData = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/users`);
+        const data = await response.json();
+
+        if (data.error) {
+          setError(data.error);
+        } else {
+          console.log(data.users);
+          updateUsersData(data.users); // Update the global variable
+
+          const filteredUser = usersData.filter((user) => user.role != "Admin");
+          console.log("The filtered array of users: ", filteredUser)
+        }
+        
+        console.log(data);
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchUsersData();
+  }, []);
+
+  const renderColumnHeader = (header) => (
+    <View style={styles.columnHeader}>
+      <Text style={styles.columnHeaderText}>{header}</Text>
+    </View>
+  );
+
+  const handleRowPress = (item) => {
+    // Update the selected row
+  setSelectedRow(item);
+
+  // Set the selected competition ID
+  updateSelectedUserId(item.user_id);
+
+  // Populate text input values with the selected row's data
+  setTextInputValues({
+    username: item.username,
+  });
+
+  // Handle the row press, navigate to a new screen, etc.
+  console.log('Row pressed:', item.name);
+};
+
+const renderRow = ({ item }) => (
+  <TouchableOpacity onPress={() => handleRowPress(item)}>
+    <View style={styles.row}>
+      <Text style={[styles.rowText, { color: 'white' }]}>{item.username}</Text>
+      {/* Add any other fields you want to display */}
+    </View>
+  </TouchableOpacity>
+);
 
   return (
     <LinearGradient
@@ -129,11 +196,20 @@ const AdminNonAdminUser = () => {
             >
               <FlatList
                 style={[styles.adminNonAdminUserTable, styles.adminBorder2]}
-                data={adminNonAdminUserTableFlatListData}
-                renderItem={({ item }) => item}
+                data={filteredUser}
+                renderItem={renderRow}
+                  keyExtractor={(item) => item.user_id.toString()}
                 contentContainerStyle={
                   styles.adminNonAdminUserTableFlatListContent
                 }
+                ListHeaderComponent={() => (
+                  <View style={styles.columnHeaderContainer}>
+                    {renderColumnHeader('Name')}
+                    {renderColumnHeader('Games Per Team')}
+                    {renderColumnHeader('Date')}
+                    {/* Add any other headers you want */}
+                  </View>
+                  )}
               />
             </View>
           </View>
@@ -152,6 +228,8 @@ const AdminNonAdminUser = () => {
                   <TextInput
                     style={styles.adminNonAdminUserUsername}
                     autoCapitalize="none"
+                    value={textInputValues.username}
+                  onChangeText={(text) => setTextInputValues({ ...textInputValues, username: text })}
                   />
                 </View>
                 <View style={[styles.frame8, styles.frameFlexBox]}>
