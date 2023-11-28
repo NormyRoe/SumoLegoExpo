@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Text, StyleSheet, View, Pressable, FlatList } from "react-native";
+import { Text, StyleSheet, View, Pressable, FlatList, TouchableOpacity } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import DisplayGameDrawTable from "../components/DisplayGameDrawTable";
 import { LinearGradient } from "expo-linear-gradient";
@@ -7,6 +7,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Padding, Border, Color, FontSize, FontFamily } from "../GlobalStyles";
 import { useEffect } from "react";
 import axios from "axios";
+import { isEmptyArray } from "formik";
 import {
   BASE_URL,
   gameResultsData,
@@ -33,24 +34,29 @@ const DisplayGameDraw = () => {
   ] = useState([<DisplayGameDrawTable />]);
 
   const navigation = useNavigation();
-  console.log("Hi 1");
   console.log("GameDraw selectedCompetitionId:", selectedCompetitionId);
   const competitionId = selectedCompetitionId;
   console.log('GameDraw Competition ID:', competitionId);
 
   const fetchData = async () => {
-    try {      
-      
-      const response = await axios.get(`${BASE_URL}/gameresult/competition/${competitionId}`);
-      const { Game_Results, error } = response.data;
-
-      console.log(`${BASE_URL}/gameresult/competition/${competitionId}`);
+    try {
   
-      if (error) {
-        console.error("Server Error:", error);
+      if (!gameResultsData || gameResultsData.length === 0) {
+        console.error("There are currently no game results to display");
       } else {
-        updateGameResultsData(Game_Results);
-  
+
+        console.log("Game Results array:", Game_Results);
+
+        // Sorting logic
+        gameResultsData.sort((a, b) => {
+          if (a.start_time === b.start_time) {
+            return a.round - b.round; // Compare round as numbers
+          }
+          return a.start_time.localeCompare(b.start_time);
+        });
+        
+        const Game_Results = gameResultsData;
+        
         const uniqueDivisions = [...new Set(Game_Results.map((result) => result.division))];
         const uniqueFields = [...new Set(Game_Results.map((result) => result.field))];
         const uniqueRounds = [...new Set(Game_Results.map((result) => result.round))];
@@ -58,6 +64,12 @@ const DisplayGameDraw = () => {
         updateDivisionsData(uniqueDivisions);
         updateFieldsData(uniqueFields);
         updateRoundsData(uniqueRounds);
+        setDisplayGameDrawTableFrameFlatListData(Game_Results);
+
+        console.log("Unique Divisions:", divisionsData);
+        console.log("Unique Fields:", fieldsData);
+        console.log("Unique Rounds:", roundsData);
+        console.log("Display table:", Game_Results);
       }
     } catch (error) {
       console.error("Error fetching data:", error.message);
@@ -70,25 +82,51 @@ const DisplayGameDraw = () => {
     fetchData();
   }, [selectedCompetitionId]);
 
-  console.log("Hi 3");
+  
+  
 
   const handleDivisionChange = (value) => {
     // Filter gameResultsData based on selected division
     const filteredResults = gameResultsData.filter((result) => result.division === value);
+    console.log("Filtered Division Results:", filteredResults);
     setDisplayGameDrawTableFrameFlatListData(filteredResults);
   };
   
   const handleFieldChange = (value) => {
+    console.log("Selected Field:", value);
     // Filter gameResultsData based on selected field
     const filteredResults = gameResultsData.filter((result) => result.field === value);
+    console.log("Filtered Field Results:", filteredResults);
     setDisplayGameDrawTableFrameFlatListData(filteredResults);
+    console.log("Updated Table Data:", filteredResults);
   };
   
   const handleRoundChange = (value) => {
     // Filter gameResultsData based on selected round
     const filteredResults = gameResultsData.filter((result) => result.round === value);
+    console.log("Filtered Round Results:", filteredResults);
     setDisplayGameDrawTableFrameFlatListData(filteredResults);
   };
+
+  const renderColumnHeader = (header) => (
+    <View style={styles.columnHeader}>
+      <Text style={styles.columnHeaderText}>{header}</Text>
+    </View>
+  );
+
+  const renderRow = ({ item }) => (
+    <TouchableOpacity>
+      <View style={styles.row}>
+        <Text style={[styles.rowText, { color: 'black' }]}>{item.team1}</Text>
+        <Text style={[styles.rowText, { textAlign: "center", color: 'black' }]}>{"VS"}</Text>
+        <Text style={[styles.rowText, { color: 'black' }]}>{item.team2}</Text>
+        <Text style={[styles.rowText, { color: 'black' }]}>{item.field}</Text>
+        <Text style={[styles.rowText, { color: 'black' }]}>{item.round}</Text>
+        <Text style={[styles.rowText, { color: 'black' }]}>{item.start_time}</Text>
+        {/* Add any other fields you want to display */}
+      </View>
+    </TouchableOpacity>
+  );
 
 
   return (
@@ -121,10 +159,10 @@ const DisplayGameDraw = () => {
                   value={dropdownMenuValue}
                   setValue={setDropdownMenuValue}
                   placeholder="Division"
-                  items={divisionsData.map((division) => ({ label: division, value: division }))}
+                  items={divisionsData.map((division) => ({ label: division, value: division, textStyle: { color: "white" } }))}
                   labelStyle={styles.dropdownMenuValue}
                   dropDownContainerStyle={styles.dropdownMenudropDownContainer}
-                  onChangeValue={handleDivisionChange}
+                  onSelectItem={(item) => handleDivisionChange(item.value)}
                 />
               </View>
               <View
@@ -137,10 +175,10 @@ const DisplayGameDraw = () => {
                   value={dropdownMenu1Value}
                   setValue={setDropdownMenu1Value}
                   placeholder="Field"
-                  items={fieldsData.map((field) => ({ label: field, value: field }))}
+                  items={fieldsData.map((field) => ({ label: field, value: field, textStyle: { color: "white" } }))}
                   labelStyle={styles.dropdownMenu1Value}
                   dropDownContainerStyle={styles.dropdownMenu1dropDownContainer}
-                  onChangeValue={handleFieldChange}
+                  onSelectItem={(item) => handleFieldChange(item.value)}
                 />
               </View>
             </View>
@@ -153,10 +191,10 @@ const DisplayGameDraw = () => {
                   value={dropdownMenu2Value}
                   setValue={setDropdownMenu2Value}
                   placeholder="Round"
-                  items={roundsData.map((round) => ({ label: round, value: round }))}
+                  items={roundsData.map((round) => ({ label: round.toString(), value: round, textStyle: { color: "white" } }))}
                   labelStyle={styles.dropdownMenu2Value}
                   dropDownContainerStyle={styles.dropdownMenu2dropDownContainer}
-                  onChangeValue={handleRoundChange}
+                  onSelectItem={(item) => handleRoundChange(item.value)}
                 />
               </View>
               <View
@@ -173,18 +211,22 @@ const DisplayGameDraw = () => {
             </View>
           </View>
           <FlatList
-            style={styles.displayGameDrawTableFrame}
-            data={gameResultsData}
-            renderItem={({ item }) => (
-              <DisplayGameDrawTable
-                redTeam={item.team1}
-                vs="VS"
-                blueTeam={item.team2}
-                division={item.division}
-                field={item.field}
-                round={item.round}
-              />
-            )}
+            style={{ 
+              ...styles.displayGameDrawTableFrame,
+              pointerEvents: (dropdownMenuOpen || dropdownMenu1Open || dropdownMenu2Open) ? 'none' : 'auto' }}
+            data={displayGameDrawTableFrameFlatListData}
+            renderItem={renderRow}
+            ListHeaderComponent={() => (
+              <View style={styles.columnHeaderContainer}>
+                {renderColumnHeader('Red Team')}
+                {renderColumnHeader('V')}
+                {renderColumnHeader('Blue Team')}
+                {renderColumnHeader('Field')}
+                {renderColumnHeader('Round')}
+                {renderColumnHeader('Start Time')}
+                {/* Add any other headers you want */}
+              </View>
+              )}
             contentContainerStyle={
               styles.displayGameDrawTableFrameFlatListContent
             }
@@ -232,14 +274,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   displayFlexBox: {
-    overflow: "hidden",
+    overflow: "visible",
     alignItems: "center",
     alignSelf: "stretch",
   },
   frameSpaceBlock: {
     paddingVertical: Padding.p_0,
     paddingHorizontal: Padding.p_6xs,
-    overflow: "hidden",
+    overflow: "visible",
     alignItems: "center",
     flexDirection: "row",
   },
@@ -280,23 +322,33 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
   },
   dropdownMenu: {
+    borderRadius: Border.br_5xs,
     borderStyle: "solid",
     alignSelf: "stretch",
+    height: 29,
     flex: 1,
+    zIndex: 2, // Add zIndex to ensure it's above the FlatList
   },
   dropdownMenu1: {
     borderRadius: Border.br_5xs,
-    overflow: "hidden",
+    borderStyle: "solid",
+    overflow: "visible",
     alignSelf: "stretch",
+    height: 29,
+    flex: 1,
+    zIndex: 2, // Add zIndex to ensure it's above the FlatList
   },
   frame: {
     height: 29,
     flex: 1,
   },
   dropdownMenu2: {
+    borderRadius: Border.br_5xs,
     borderStyle: "solid",
+    alignSelf: "stretch",
     height: 29,
     flex: 1,
+    zIndex: 2, // Add zIndex to ensure it's above the FlatList
   },
   leaderboards: {
     fontSize: FontSize.size_4xl,
@@ -329,6 +381,7 @@ const styles = StyleSheet.create({
   displayGameDrawTableDropdo: {
     justifyContent: "center",
     flex: 1,
+    zIndex: 1, // Add zIndex to ensure the dropdown is positioned above other elements
   },
   displayGameDrawFrame: {
     paddingTop: Padding.p_3xs,
@@ -336,6 +389,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "stretch",
     flex: 1,
+    zIndex: 0, // Add zIndex to ensure the dropdown is positioned above other elements
   },
   displayGameDraw: {
     width: "100%",
@@ -346,6 +400,36 @@ const styles = StyleSheet.create({
     backgroundColor: Color.backGround,
     flexDirection: "row",
     flex: 1,
+    position: "relative", // Add position:relative to establish a stacking context
+  },
+  columnHeaderContainer: {
+    flexDirection: 'row',
+    paddingBottom: 10,
+  },
+  columnHeader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#DDDDDD',
+    padding: 10,
+  },
+  columnHeaderText: {
+    fontWeight: 'bold',
+  },
+  row: {
+    flexDirection: 'row',
+    paddingBottom: 10,
+  },
+  rowText: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#DDDDDD',
+  },
+  selectedRow: {
+    backgroundColor: 'blue', // Adjust the color as needed
   },
 });
 
