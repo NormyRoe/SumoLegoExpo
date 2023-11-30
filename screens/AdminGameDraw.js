@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Image } from "expo-image";
-import { StyleSheet, Pressable, Text, View, FlatList } from "react-native";
+import { StyleSheet, Pressable, Text, View, FlatList, TouchableOpacity } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import Row28 from "../components/Row28";
 import Row27 from "../components/Row27";
@@ -9,7 +9,22 @@ import Row25 from "../components/Row25";
 import Row24 from "../components/Row24";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
+import axios from "axios";
 import { Color, Border, FontSize, FontFamily, Padding } from "../GlobalStyles";
+import {
+  BASE_URL,
+  gameResultsData,
+  updateGameResultsData,
+  updateDivisionsData,
+  divisionsData,
+  updateFieldsData,
+  fieldsData,
+  updateRoundsData,
+  roundsData,
+  updateTeamsData,
+  teamsData,
+  selectedCompetitionId,
+} from "../GlobalVariables";
 
 const AdminGameDraw = () => {
   const [adminGameDrawDivisionDropdOpen, setAdminGameDrawDivisionDropdOpen] =
@@ -30,7 +45,87 @@ const AdminGameDraw = () => {
     useState();
   const [adminGameDrawTableFlatListData, setAdminGameDrawTableFlatListData] =
     useState([<Row28 />, <Row27 />, <Row26 />, <Row25 />, <Row24 />]);
+
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("Data retrieved, please select a tab...");
+
   const navigation = useNavigation();
+
+  console.log("Admin GameDraw selectedCompetitionId:", selectedCompetitionId);
+  const competitionId = selectedCompetitionId;
+  console.log('Admin GameDraw Competition ID:', competitionId);
+
+
+  const fetchData = async () => {
+    
+    try {      
+
+      setLoading(true);
+      setMessage("Currently retrieving data...");
+      
+      const response = await axios.get(`${BASE_URL}/gameresult/competition/${competitionId}`);
+      const { Game_Results, error } = response.data;
+
+      console.log(`${BASE_URL}/gameresult/competition/${competitionId}`);
+  
+      if (error) {
+        console.error("Server Error:", error);
+      } else {
+        updateGameResultsData(Game_Results);
+        console.log("Game Results data:", gameResultsData);
+        setAdminGameDrawTableFlatListData(Game_Results);
+        
+        // Extract unique values
+        const uniqueDivisions = [...new Set(Game_Results.map((result) => result.division))];
+        const uniqueFields = [...new Set(Game_Results.map((result) => result.field))];
+        const uniqueRounds = [...new Set(Game_Results.map((result) => result.round))];
+        const uniqueTeams = [...new Set([...Game_Results.map(result => result.team1), ...Game_Results.map(result => result.team2)])];
+
+        updateDivisionsData(uniqueDivisions);
+        updateFieldsData(uniqueFields);
+        updateRoundsData(uniqueRounds);
+        updateTeamsData(uniqueTeams);
+
+        console.log("Unique Divisions:", divisionsData);
+        console.log("Unique Fields:", fieldsData);
+        console.log("Unique Rounds:", roundsData);
+        console.log("Unique Teams:", teamsData);
+
+
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error.message);
+    } finally {
+      setLoading(false);
+      setMessage("Data retrieved, please select a dropdown to filter...");
+    }
+  };
+
+
+  useEffect(() => {
+    fetchData();
+  }, [selectedCompetitionId]);
+
+  const renderColumnHeader = (header) => (
+    <View style={styles.columnHeader}>
+      <Text style={styles.columnHeaderText}>{header}</Text>
+    </View>
+  );
+
+  const renderRow = ({ item }) => (
+    <TouchableOpacity>
+      <View style={styles.row}>
+        <Text style={[styles.rowText, { color: 'white' }]}>{item.team1}</Text>
+        <Text style={[styles.rowText, { textAlign: "center", color: 'white' }]}>{"VS"}</Text>
+        <Text style={[styles.rowText, { color: 'white' }]}>{item.team2}</Text>
+        <Text style={[styles.rowText, { color: 'white' }]}>{item.field}</Text>
+        <Text style={[styles.rowText, { color: 'white' }]}>{item.round}</Text>
+        <Text style={[styles.rowText, { color: 'white' }]}>{item.start_time}</Text>
+        {/* Add any other fields you want to display */}
+      </View>
+    </TouchableOpacity>
+  );
+   
 
   return (
     <LinearGradient
@@ -43,7 +138,7 @@ const AdminGameDraw = () => {
         "rgba(0, 70, 255, 0.78)",
       ]}
     >
-      <View style={[styles.adminMenu, styles.adminBorder2]}>
+      <View style={[styles.adminMenu, styles.adminBorder2]}>        
         <Image
           style={styles.image1Icon}
           contentFit="cover"
@@ -123,6 +218,15 @@ const AdminGameDraw = () => {
         </Pressable>
       </View>
       <View style={styles.frameParent}>
+        {loading ? (
+          <Text style={styles.loadingMessage} numberOfLines={1}>
+            {message}
+          </Text>
+        ) : (
+          <Text style={styles.loadingMessage} numberOfLines={1}>
+            {message}
+          </Text>
+        )}
         <View style={[styles.frame, styles.frameFlexBox]}>
           <Text style={[styles.gameDraw1, styles.gameDraw1FlexBox]}>
             Game Draw
@@ -145,7 +249,7 @@ const AdminGameDraw = () => {
                     value={adminGameDrawDivisionDropdValue}
                     setValue={setAdminGameDrawDivisionDropdValue}
                     placeholder="Division"
-                    items={[]}
+                    items={divisionsData.map(division => ({ label: division, value: division }))}
                     labelStyle={styles.adminGameDrawDivisionDropdValue}
                     dropDownContainerStyle={
                       styles.adminGameDrawDivisionDropddropDownContainer
@@ -165,7 +269,7 @@ const AdminGameDraw = () => {
                     value={adminGameDrawFieldDropdownValue}
                     setValue={setAdminGameDrawFieldDropdownValue}
                     placeholder="Field"
-                    items={[]}
+                    items={fieldsData.map(field => ({ label: field, value: field }))}
                     labelStyle={styles.adminGameDrawFieldDropdownValue}
                     dropDownContainerStyle={
                       styles.adminGameDrawFieldDropdowndropDownContainer
@@ -185,7 +289,7 @@ const AdminGameDraw = () => {
                     value={adminGameDrawTeamDropdownValue}
                     setValue={setAdminGameDrawTeamDropdownValue}
                     placeholder="Team"
-                    items={[]}
+                    items={teamsData.map(team => ({ label: team, value: team }))}
                     labelStyle={styles.adminGameDrawTeamDropdownValue}
                     dropDownContainerStyle={
                       styles.adminGameDrawTeamDropdowndropDownContainer
@@ -205,7 +309,7 @@ const AdminGameDraw = () => {
                     value={adminGameDrawRoundDropdownValue}
                     setValue={setAdminGameDrawRoundDropdownValue}
                     placeholder="Round"
-                    items={[]}
+                    items={roundsData.map(round => ({ label: round.toString(), value: round }))}
                     labelStyle={styles.adminGameDrawRoundDropdownValue}
                     dropDownContainerStyle={
                       styles.adminGameDrawRoundDropdowndropDownContainer
@@ -214,7 +318,9 @@ const AdminGameDraw = () => {
                 </View>
               </View>
               <View style={[styles.frame5, styles.frameFlexBox1]}>
-                <Pressable style={styles.adminGameDrawExportButton}>
+                <Pressable 
+                  style={styles.adminGameDrawExportButton}
+                >
                   <Text style={styles.export}>Export</Text>
                 </Pressable>
               </View>
@@ -225,7 +331,18 @@ const AdminGameDraw = () => {
               <FlatList
                 style={[styles.adminGameDrawTable, styles.adminBorder2]}
                 data={adminGameDrawTableFlatListData}
-                renderItem={({ item }) => item}
+                renderItem={renderRow}
+                ListHeaderComponent={() => (
+                  <View style={styles.columnHeaderContainer}>
+                    {renderColumnHeader('Red Team')}
+                    {renderColumnHeader('V')}
+                    {renderColumnHeader('Blue Team')}
+                    {renderColumnHeader('Field')}
+                    {renderColumnHeader('Round')}
+                    {renderColumnHeader('Start Time')}
+                    {/* Add any other headers you want */}
+                  </View>
+                  )}
                 contentContainerStyle={styles.adminGameDrawTableFlatListContent}
               />
             </View>
@@ -243,9 +360,13 @@ const styles = StyleSheet.create({
     fontFamily: "Source Sans Pro",
   },
   adminGameDrawDivisionDropddropDownContainer: {
+    height: "auto", // or specify a fixed height
+    overflow: "visible",
     borderStyle: "solid",
     borderColor: "#000",
     borderWidth: 1,
+    flex: 1,
+    zIndex: 2,
   },
   adminGameDrawFieldDropdownValue: {
     color: "#2b2b2b",
@@ -253,9 +374,13 @@ const styles = StyleSheet.create({
     fontFamily: "Source Sans Pro",
   },
   adminGameDrawFieldDropdowndropDownContainer: {
+    height: "auto", // or specify a fixed height
+    overflow: "visible",
     borderStyle: "solid",
     borderColor: "#000",
     borderWidth: 1,
+    flex: 1,
+    zIndex: 2,
   },
   adminGameDrawTeamDropdownValue: {
     color: "#2b2b2b",
@@ -263,9 +388,13 @@ const styles = StyleSheet.create({
     fontFamily: "Source Sans Pro",
   },
   adminGameDrawTeamDropdowndropDownContainer: {
+    height: "auto", // or specify a fixed height
+    overflow: "visible",
     borderStyle: "solid",
     borderColor: "#000",
     borderWidth: 1,
+    flex: 1,
+    zIndex: 2,
   },
   adminGameDrawRoundDropdownValue: {
     color: "#2b2b2b",
@@ -273,9 +402,13 @@ const styles = StyleSheet.create({
     fontFamily: "Source Sans Pro",
   },
   adminGameDrawRoundDropdowndropDownContainer: {
+    height: "auto", // or specify a fixed height
+    overflow: "visible",
     borderStyle: "solid",
     borderColor: "#000",
     borderWidth: 1,
+    flex: 1,
+    zIndex: 2,
   },
   adminGameDrawTableFlatListContent: {
     flexDirection: "column",
@@ -306,12 +439,12 @@ const styles = StyleSheet.create({
   frameFlexBox: {
     alignItems: "flex-end",
     alignSelf: "stretch",
-    overflow: "hidden",
+    overflow: "visible",
     justifyContent: "center",
   },
   frameFlexBox1: {
     flexDirection: "row",
-    overflow: "hidden",
+    overflow: "visible",
   },
   adminBorder: {
     borderRadius: Border.br_5xs,
@@ -360,17 +493,23 @@ const styles = StyleSheet.create({
     borderColor: Color.colorBlack,
     borderWidth: 1,
     borderStyle: "solid",
+    zIndex: 1, // Adjust as needed
   },
   adminGameDrawDivisionDropd: {
     flex: 1,
+    zIndex: 2, // Adjust as needed, set a higher zIndex than dropdownpicker
+    marginRight: 10, // Add margin to separate dropdowns
   },
   adminGameDrawFieldDropdown: {
     width: 99,
     marginLeft: 10,
+    zIndex: 3, // Adjust as needed, set a higher zIndex than dropdownpicker
+    marginRight: 10, // Add margin to separate dropdowns
   },
   adminGameDrawRoundDropdown: {
     marginLeft: 10,
     flex: 1,
+    zIndex: 4, // Adjust as needed, set a higher zIndex than dropdownpicker
   },
   frame4: {
     height: 32,
@@ -411,7 +550,7 @@ const styles = StyleSheet.create({
   },
   frame3: {
     alignSelf: "stretch",
-    overflow: "hidden",
+    overflow: "visible",
   },
   frame2: {
     height: 44,
@@ -439,7 +578,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
     justifyContent: "flex-end",
     alignSelf: "stretch",
-    overflow: "hidden",
+    overflow: "visible",
   },
   frameParent: {
     paddingHorizontal: Padding.p_10xs,
@@ -458,6 +597,39 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     flexDirection: "row",
     flex: 1,
+  },
+  columnHeaderContainer: {
+    flexDirection: 'row',
+    paddingBottom: 10,
+  },
+  columnHeader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#DDDDDD',
+    padding: 10,
+  },
+  columnHeaderText: {
+    fontWeight: 'bold',
+  },
+  row: {
+    flexDirection: 'row',
+    paddingBottom: 10,
+  },
+  rowText: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#DDDDDD',
+  },
+  loadingMessage: {
+    textAlign: 'center',
+    marginTop: 10,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'black', // Adjust the color as needed
   },
 });
 
