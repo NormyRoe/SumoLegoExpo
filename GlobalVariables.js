@@ -1,6 +1,6 @@
 // GlobalVariables.js
 
-export const BASE_URL = "http://172.20.10.6:8000";
+export const BASE_URL = "http://192.168.1.106:8000";
 
 export let competitionsData = [];
 
@@ -35,6 +35,8 @@ export let accessRole = "";
 export let userName = "";
 
 export let roundsData = [];
+
+export const TAB_LABELS = ['Science', 'Technology', 'Engineering', 'Math'];
 
 
 export const updateCompetitionsData = (data) => {
