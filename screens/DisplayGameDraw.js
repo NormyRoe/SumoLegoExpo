@@ -33,6 +33,10 @@ const DisplayGameDraw = () => {
     setDisplayGameDrawTableFrameFlatListData,
   ] = useState([<DisplayGameDrawTable />]);
 
+  const [selectedDivision, setSelectedDivision] = useState(null);
+  const [selectedField, setSelectedField] = useState(null);
+  const [selectedRound, setSelectedRound] = useState(null);
+
   const navigation = useNavigation();
   console.log("GameDraw selectedCompetitionId:", selectedCompetitionId);
   const competitionId = selectedCompetitionId;
@@ -76,36 +80,51 @@ const DisplayGameDraw = () => {
     }
   };
 
+  const filterData = () => {
+    let filteredResults = gameResultsData;
+
+    if (selectedDivision) {
+      filteredResults = filteredResults.filter(
+        (result) => result.division === selectedDivision
+      );
+    }
+
+    if (selectedField) {
+      filteredResults = filteredResults.filter(
+        (result) => result.field === selectedField
+      );
+    }
+
+    if (selectedRound) {
+      filteredResults = filteredResults.filter(
+        (result) => result.round === selectedRound
+      );
+    }
+
+    setDisplayGameDrawTableFrameFlatListData(filteredResults);
+  };
+
   console.log("Hi 2");
 
   useEffect(() => {
     fetchData();
   }, [selectedCompetitionId]);
 
-  
+  useEffect(() => {
+    filterData();
+  }, [selectedDivision, selectedField, selectedRound]);
   
 
   const handleDivisionChange = (value) => {
-    // Filter gameResultsData based on selected division
-    const filteredResults = gameResultsData.filter((result) => result.division === value);
-    console.log("Filtered Division Results:", filteredResults);
-    setDisplayGameDrawTableFrameFlatListData(filteredResults);
+    setSelectedDivision(value);
   };
-  
+
   const handleFieldChange = (value) => {
-    console.log("Selected Field:", value);
-    // Filter gameResultsData based on selected field
-    const filteredResults = gameResultsData.filter((result) => result.field === value);
-    console.log("Filtered Field Results:", filteredResults);
-    setDisplayGameDrawTableFrameFlatListData(filteredResults);
-    console.log("Updated Table Data:", filteredResults);
+    setSelectedField(value);
   };
-  
+
   const handleRoundChange = (value) => {
-    // Filter gameResultsData based on selected round
-    const filteredResults = gameResultsData.filter((result) => result.round === value);
-    console.log("Filtered Round Results:", filteredResults);
-    setDisplayGameDrawTableFrameFlatListData(filteredResults);
+    setSelectedRound(value);
   };
 
   const renderColumnHeader = (header) => (
@@ -151,7 +170,7 @@ const DisplayGameDraw = () => {
             style={[styles.displayGameDrawDropdownBut, styles.displayFlexBox]}
           >
             <View style={[styles.frame, styles.frameSpaceBlock]}>
-              <View style={[styles.dropdownMenu, styles.dropdownLayout]}>
+              <View style={[styles.dropdownMenu1, styles.dropdownLayout]}>
                 <DropDownPicker
                   style={[styles.dropdownpicker, styles.dropdownpickerBorder]}
                   open={dropdownMenuOpen}
@@ -159,9 +178,13 @@ const DisplayGameDraw = () => {
                   value={dropdownMenuValue}
                   setValue={setDropdownMenuValue}
                   placeholder="Division"
-                  items={divisionsData.map((division) => ({ label: division, value: division, textStyle: { color: "white" } }))}
-                  labelStyle={styles.dropdownMenuValue}
-                  dropDownContainerStyle={styles.dropdownMenudropDownContainer}
+                  items={divisionsData.map((division) => ({ 
+                    label: division, 
+                    value: division, 
+                    textStyle: { color: "white" } 
+                  }))}
+                  labelStyle={styles.dropdownMenu1Value}
+                  dropDownContainerStyle={styles.dropdownMenu1dropDownContainer}
                   onSelectItem={(item) => handleDivisionChange(item.value)}
                 />
               </View>
@@ -175,7 +198,11 @@ const DisplayGameDraw = () => {
                   value={dropdownMenu1Value}
                   setValue={setDropdownMenu1Value}
                   placeholder="Field"
-                  items={fieldsData.map((field) => ({ label: field, value: field, textStyle: { color: "white" } }))}
+                  items={fieldsData.map((field) => ({ 
+                    label: field, 
+                    value: field, 
+                    textStyle: { color: "white" } 
+                  }))}
                   labelStyle={styles.dropdownMenu1Value}
                   dropDownContainerStyle={styles.dropdownMenu1dropDownContainer}
                   onSelectItem={(item) => handleFieldChange(item.value)}
@@ -183,7 +210,7 @@ const DisplayGameDraw = () => {
               </View>
             </View>
             <View style={[styles.frame1, styles.frameSpaceBlock]}>
-              <View style={[styles.dropdownMenu2, styles.dropdownLayout]}>
+              <View style={[styles.dropdownMenu1, styles.dropdownLayout]}>
                 <DropDownPicker
                   style={[styles.dropdownpicker, styles.dropdownpickerBorder]}
                   open={dropdownMenu2Open}
@@ -191,9 +218,13 @@ const DisplayGameDraw = () => {
                   value={dropdownMenu2Value}
                   setValue={setDropdownMenu2Value}
                   placeholder="Round"
-                  items={roundsData.map((round) => ({ label: round.toString(), value: round, textStyle: { color: "white" } }))}
-                  labelStyle={styles.dropdownMenu2Value}
-                  dropDownContainerStyle={styles.dropdownMenu2dropDownContainer}
+                  items={roundsData.map((round) => ({ 
+                    label: round.toString(), 
+                    value: round, 
+                    textStyle: { color: "white" } 
+                  }))}
+                  labelStyle={styles.dropdownMenu1Value}
+                  dropDownContainerStyle={styles.dropdownMenu1dropDownContainer}
                   onSelectItem={(item) => handleRoundChange(item.value)}
                 />
               </View>
@@ -287,7 +318,7 @@ const styles = StyleSheet.create({
   },
   dropdownLayout: {
     borderRadius: Border.br_5xs,
-    overflow: "hidden",
+    overflow: "visible",
   },
   dropdownpickerBorder: {
     borderWidth: 1,
@@ -345,6 +376,7 @@ const styles = StyleSheet.create({
   dropdownMenu2: {
     borderRadius: Border.br_5xs,
     borderStyle: "solid",
+    overflow: "visible",
     alignSelf: "stretch",
     height: 29,
     flex: 1,
