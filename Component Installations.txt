@@ -33,6 +33,8 @@ sudo npm install moment
 
 sudo npm install axios
 
+npm install react-native-share react-native-fs
+
 sudo npm audit fix --force
 
 sudo npm audit fix --force
