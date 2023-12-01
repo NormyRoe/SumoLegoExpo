@@ -10,6 +10,7 @@ import Row24 from "../components/Row24";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
+import { Platform } from 'react-native';
 import { Color, Border, FontSize, FontFamily, Padding } from "../GlobalStyles";
 import {
   BASE_URL,
@@ -55,6 +56,10 @@ const AdminGameDraw = () => {
   const competitionId = selectedCompetitionId;
   console.log('Admin GameDraw Competition ID:', competitionId);
 
+  let RNFS;
+  if (Platform.OS !== 'web') {
+    RNFS = require('react-native-fs');
+  }
 
   const fetchData = async () => {
     
@@ -125,6 +130,62 @@ const AdminGameDraw = () => {
       </View>
     </TouchableOpacity>
   );
+
+  const handleExportButtonPress = async () => {
+    // Get your data (headers and rows) from the FlatList
+    const dataToExport = adminGameDrawTableFlatListData;
+  
+    // Construct the file path (you can customize the filename)
+    const fileName = 'exported_data';
+    
+    exportDataToFile(dataToExport, fileName);
+
+  };
+
+  const exportDataToFile = async (data, fileName) => {
+    try {
+      // Extract only the relevant columns
+      const relevantColumns = ['division', 'round', 'field', 'start_time', 'team1', 'team1_school', 'team2', 'team2_school'];
+
+      // Convert data to CSV format with only relevant columns
+      const csvData = [relevantColumns.join(',')].concat(
+        data.map(item => relevantColumns.map(column => item[column]).join(','))
+      ).join('\n');
+
+  
+      // Construct the file
+      const blob = new Blob([csvData], { type: 'text/csv' });
+  
+      if (Platform.OS === 'web') {
+        // For web, create a download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${fileName}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } else {
+        // For mobile platforms, use the existing file saving logic
+        let filePath;
+        if (Platform.OS === 'ios') {
+          filePath = `${RNFS.DocumentDirectoryPath}/${fileName}.csv`;
+        } else if (Platform.OS === 'android') {
+          filePath = `${RNFS.ExternalDirectoryPath}/${fileName}.csv`;
+        } else {
+          console.warn('Unsupported platform:', Platform.OS);
+          return;
+        }
+  
+        await RNFS.writeFile(filePath, csvData, 'utf8');
+        console.log('File saved successfully:', filePath);
+      }
+    } catch (error) {
+      console.error('Error saving file:', error);
+    }
+  };
+  
    
 
   return (
@@ -278,7 +339,7 @@ const AdminGameDraw = () => {
                 </View>
                 <View
                   style={[
-                    styles.adminGameDrawFieldDropdown,
+                    styles.adminGameDrawTeamDropdown,
                     styles.adminBorder,
                   ]}
                 >
@@ -320,6 +381,7 @@ const AdminGameDraw = () => {
               <View style={[styles.frame5, styles.frameFlexBox1]}>
                 <Pressable 
                   style={styles.adminGameDrawExportButton}
+                  onPress={handleExportButtonPress}
                 >
                   <Text style={styles.export}>Export</Text>
                 </Pressable>
@@ -421,7 +483,7 @@ const styles = StyleSheet.create({
     height: 30,
     backgroundColor: Color.white,
     alignSelf: "stretch",
-    overflow: "hidden",
+    overflow: "visible",
     borderWidth: 1,
     borderColor: Color.colorBlack,
     borderStyle: "solid",
@@ -449,7 +511,7 @@ const styles = StyleSheet.create({
   adminBorder: {
     borderRadius: Border.br_5xs,
     alignSelf: "stretch",
-    overflow: "hidden",
+    overflow: "visible",
     borderStyle: "solid",
   },
   image1Icon: {
@@ -474,7 +536,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: Padding.p_9xs,
     paddingVertical: Padding.p_4xs,
-    overflow: "hidden",
+    overflow: "visible",
     borderColor: Color.colorBlack,
     borderWidth: 1,
     borderStyle: "solid",
@@ -497,23 +559,28 @@ const styles = StyleSheet.create({
   },
   adminGameDrawDivisionDropd: {
     flex: 1,
-    zIndex: 2, // Adjust as needed, set a higher zIndex than dropdownpicker
+    zIndex: 3, // Adjust as needed, set a higher zIndex than dropdownpicker
     marginRight: 10, // Add margin to separate dropdowns
   },
   adminGameDrawFieldDropdown: {
     width: 99,
     marginLeft: 10,
-    zIndex: 3, // Adjust as needed, set a higher zIndex than dropdownpicker
+    zIndex: 4, // Adjust as needed, set a higher zIndex than dropdownpicker
     marginRight: 10, // Add margin to separate dropdowns
   },
-  adminGameDrawRoundDropdown: {
+  adminGameDrawTeamDropdown: {
     marginLeft: 10,
     flex: 1,
     zIndex: 4, // Adjust as needed, set a higher zIndex than dropdownpicker
   },
+  adminGameDrawRoundDropdown: {
+    marginLeft: 10,
+    flex: 1,
+    zIndex: 5, // Adjust as needed, set a higher zIndex than dropdownpicker
+  },
   frame4: {
     height: 32,
-    overflow: "hidden",
+    overflow: "visible",
     alignItems: "center",
     flexWrap: "wrap",
     flexDirection: "row",
@@ -545,7 +612,7 @@ const styles = StyleSheet.create({
     width: 104,
     paddingTop: Padding.p_11xs,
     marginLeft: 10,
-    overflow: "hidden",
+    overflow: "visible",
     justifyContent: "center",
   },
   frame3: {
@@ -560,7 +627,7 @@ const styles = StyleSheet.create({
     backgroundColor: Color.colorDarkslategray,
     borderColor: Color.colorDimgray,
     alignSelf: "stretch",
-    overflow: "hidden",
+    overflow: "visible",
     borderWidth: 1,
     borderStyle: "solid",
     flex: 1,
@@ -572,6 +639,7 @@ const styles = StyleSheet.create({
   frame6: {
     height: 216,
     marginTop: 8,
+    overflow: "visible",
   },
   frame1: {
     height: 271,
@@ -586,6 +654,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     justifyContent: "flex-end",
     flex: 1,
+    overflow: "visible",
   },
   adminGameDraw: {
     width: "100%",
