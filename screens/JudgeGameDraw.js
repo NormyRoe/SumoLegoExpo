@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Text, StyleSheet, FlatList, View, Pressable } from "react-native";
+import React, { useState, useEffect } from "react";
+import { Text, StyleSheet, FlatList, View, Pressable, TouchableOpacity } from "react-native";
 import Row43 from "../components/Row43";
 import Row42 from "../components/Row42";
 import Row411 from "../components/Row411";
@@ -9,7 +9,23 @@ import Row39 from "../components/Row39";
 import DropDownPicker from "react-native-dropdown-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
+import axios from "axios";
 import { Color, Border, FontSize, FontFamily, Padding } from "../GlobalStyles";
+import {
+  BASE_URL,
+  gameResultsData,
+  updateGameResultsData,
+  updateDivisionsData,
+  divisionsData,
+  updateFieldsData,
+  fieldsData,
+  updateRoundsData,
+  roundsData,
+  updateSchoolsData,
+  schoolsData,
+  selectedCompetitionId,
+} from "../GlobalVariables";
+
 
 const JudgeGameDraw = () => {
   const [judgeGameDrawTableFlatListData, setJudgeGameDrawTableFlatListData] =
@@ -37,7 +53,140 @@ const JudgeGameDraw = () => {
     useState(false);
   const [judgeGameDrawSchoolDropdowValue, setJudgeGameDrawSchoolDropdowValue] =
     useState();
+
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("Data retrieved, please select a tab...");
+
+  const [selectedDivision, setSelectedDivision] = useState(null);
+  const [selectedField, setSelectedField] = useState(null);
+  const [selectedRound, setSelectedRound] = useState(null);
+  const [selectedSchool, setSelectedSchool] = useState(null);
+
   const navigation = useNavigation();
+
+  console.log("Judge GameDraw selectedCompetitionId:", selectedCompetitionId);
+  const competitionId = selectedCompetitionId;
+  console.log('Judge GameDraw Competition ID:', competitionId);
+
+  const fetchData = async () => {
+    
+    try {      
+
+      setLoading(true);
+      setMessage("Currently retrieving data...");
+      
+      const response = await axios.get(`${BASE_URL}/gameresult/competition/${competitionId}`);
+      const { Game_Results, error } = response.data;
+
+      console.log(`${BASE_URL}/gameresult/competition/${competitionId}`);
+  
+      if (error) {
+        console.error("Server Error:", error);
+      } else {
+        updateGameResultsData(Game_Results);
+        console.log("Game Results data:", gameResultsData);
+        setJudgeGameDrawTableFlatListData(Game_Results);
+        
+        // Extract unique values
+        const uniqueDivisions = [...new Set(Game_Results.map((result) => result.division))];
+        const uniqueFields = [...new Set(Game_Results.map((result) => result.field))];
+        const uniqueRounds = [...new Set(Game_Results.map((result) => result.round))];
+        const uniqueSchools = [...new Set([...Game_Results.map(result => result.team1_school), ...Game_Results.map(result => result.team2_school)])];
+
+        updateDivisionsData(uniqueDivisions);
+        updateFieldsData(uniqueFields);
+        updateRoundsData(uniqueRounds);
+        updateSchoolsData(uniqueSchools);
+
+        console.log("Unique Divisions:", divisionsData);
+        console.log("Unique Fields:", fieldsData);
+        console.log("Unique Rounds:", roundsData);
+        console.log("Unique Schools:", schoolsData);
+
+
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error.message);
+    } finally {
+      setLoading(false);
+      setMessage("Data retrieved, please select a dropdown to filter...");
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [selectedCompetitionId]);
+
+  const filterData = () => {
+    let filteredResults = gameResultsData;
+
+    if (selectedDivision) {
+      filteredResults = filteredResults.filter(
+        (result) => result.division === selectedDivision
+      );
+    }
+
+    if (selectedField) {
+      filteredResults = filteredResults.filter(
+        (result) => result.field === selectedField
+      );
+    }
+
+    if (selectedRound) {
+      filteredResults = filteredResults.filter(
+        (result) => result.round === selectedRound
+      );
+    }
+
+    if (selectedSchool) {
+      filteredResults = filteredResults.filter(
+        (result) => result.team1_school === selectedSchool || result.team2_school === selectedSchool
+      );
+    }
+
+    setJudgeGameDrawTableFlatListData(filteredResults);
+  };
+
+  useEffect(() => {
+    filterData();
+  }, [selectedDivision, selectedField, selectedRound, selectedSchool]);
+
+  const handleDivisionChange = (value) => {
+    setSelectedDivision(value);
+  };
+
+  const handleFieldChange = (value) => {
+    setSelectedField(value);
+  };
+
+  const handleRoundChange = (value) => {
+    setSelectedRound(value);
+  };
+
+  const handleSchoolChange = (value) => {
+    setSelectedSchool(value);
+  };
+
+  const renderColumnHeader = (header) => (
+    <View style={styles.columnHeader}>
+      <Text style={styles.columnHeaderText}>{header}</Text>
+    </View>
+  );
+
+  const renderRow = ({ item }) => (
+    <TouchableOpacity>
+      <View style={styles.row}>
+        <Text style={[styles.rowText, { color: 'white' }]}>{item.team1}</Text>
+        <Text style={[styles.rowText, { textAlign: "center", color: 'white' }]}>{"VS"}</Text>
+        <Text style={[styles.rowText, { color: 'white' }]}>{item.team2}</Text>
+        <Text style={[styles.rowText, { color: 'white' }]}>{item.field}</Text>
+        <Text style={[styles.rowText, { color: 'white' }]}>{item.round}</Text>
+        <Text style={[styles.rowText, { color: 'white' }]}>{item.start_time}</Text>
+        {/* Add any other fields you want to display */}
+      </View>
+    </TouchableOpacity>
+  );
+
 
   return (
     <LinearGradient
@@ -50,13 +199,24 @@ const JudgeGameDraw = () => {
         "rgba(0, 70, 255, 0.78)",
       ]}
     >
-      <View style={styles.judgeGameDrawFrame}>
-        <Text style={[styles.gameDraw, styles.gameFlexBox]}>Game Draw</Text>
+      <View style={styles.judgeGameDrawFrame}>        
+        <Text style={[styles.gameDraw, styles.gameFlexBox]}>Game Draw</Text>        
         <View style={[styles.judgeGameDrawTableFrame, styles.judgeFlexBox]}>
           <FlatList
             style={styles.judgeGameDrawTable}
             data={judgeGameDrawTableFlatListData}
-            renderItem={({ item }) => item}
+            renderItem={renderRow}
+            ListHeaderComponent={() => (
+              <View style={styles.columnHeaderContainer}>
+                {renderColumnHeader('Red Team')}
+                {renderColumnHeader('V')}
+                {renderColumnHeader('Blue Team')}
+                {renderColumnHeader('Field')}
+                {renderColumnHeader('Round')}
+                {renderColumnHeader('Start Time')}
+                {/* Add any other headers you want */}
+              </View>
+              )}
             contentContainerStyle={styles.judgeGameDrawTableFlatListContent}
           />
         </View>
@@ -69,11 +229,12 @@ const JudgeGameDraw = () => {
               value={judgeGameDrawDivisionDropdValue}
               setValue={setJudgeGameDrawDivisionDropdValue}
               placeholder="Division"
-              items={[]}
+              items={divisionsData.map(division => ({ label: division, value: division }))}
               labelStyle={styles.judgeGameDrawDivisionDropdValue}
               dropDownContainerStyle={
                 styles.judgeGameDrawDivisionDropddropDownContainer
               }
+              onSelectItem={(item) => handleDivisionChange(item.value)}
             />
           </View>
           <View style={[styles.judgeGameDrawFieldDropdown, styles.judgeLayout]}>
@@ -84,11 +245,12 @@ const JudgeGameDraw = () => {
               value={judgeGameDrawFieldDropdownValue}
               setValue={setJudgeGameDrawFieldDropdownValue}
               placeholder="Field"
-              items={[]}
+              items={fieldsData.map(field => ({ label: field, value: field }))}
               labelStyle={styles.judgeGameDrawFieldDropdownValue}
               dropDownContainerStyle={
                 styles.judgeGameDrawFieldDropdowndropDownContainer
               }
+              onSelectItem={(item) => handleFieldChange(item.value)}
             />
           </View>
           <View style={styles.judgeLayout}>
@@ -99,11 +261,12 @@ const JudgeGameDraw = () => {
               value={judgeGameDrawRoundDropdownValue}
               setValue={setJudgeGameDrawRoundDropdownValue}
               placeholder="Round"
-              items={[]}
+              items={roundsData.map(round => ({ label: round.toString(), value: round }))}
               labelStyle={styles.judgeGameDrawRoundDropdownValue}
               dropDownContainerStyle={
                 styles.judgeGameDrawRoundDropdowndropDownContainer
               }
+              onSelectItem={(item) => handleRoundChange(item.value)}
             />
           </View>
           <View style={styles.judgeLayout}>
@@ -114,11 +277,12 @@ const JudgeGameDraw = () => {
               value={judgeGameDrawSchoolDropdowValue}
               setValue={setJudgeGameDrawSchoolDropdowValue}
               placeholder="School"
-              items={[]}
+              items={schoolsData.map(school => ({ label: school, value: school }))}
               labelStyle={styles.judgeGameDrawSchoolDropdowValue}
               dropDownContainerStyle={
                 styles.judgeGameDrawSchoolDropdowdropDownContainer
               }
+              onSelectItem={(item) => handleSchoolChange(item.value)}
             />
           </View>
         </View>
@@ -133,6 +297,15 @@ const JudgeGameDraw = () => {
               Game Scoring
             </Text>
           </Pressable>
+          {loading ? (
+            <Text style={styles.loadingMessage} numberOfLines={1}>
+              {message}
+            </Text>
+          ) : (
+            <Text style={styles.loadingMessage} numberOfLines={1}>
+              {message}
+            </Text>
+          )}
           <Pressable
             style={[styles.judgeGameDrawLogoutButton, styles.judgeBorder]}
             onPress={() => navigation.navigate("Login")}
@@ -253,12 +426,12 @@ const styles = StyleSheet.create({
   judgeGameDrawDivisionDropd: {
     height: 34,
     borderRadius: Border.br_5xs,
-    overflow: "hidden",
+    overflow: "visible",
     borderStyle: "solid",
     flex: 1,
   },
   judgeGameDrawFieldDropdown: {
-    overflow: "hidden",
+    overflow: "visible",
   },
   dropdownpicker2: {
     backgroundColor: Color.white,
@@ -270,7 +443,7 @@ const styles = StyleSheet.create({
     top: 61,
     left: 36,
     width: 761,
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "row",
   },
   judgeGameDrawGameScoringB1: {
@@ -291,7 +464,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 11,
     paddingVertical: 5,
-    overflow: "hidden",
+    overflow: "visible",
     position: "absolute",
     flexDirection: "row",
   },
@@ -307,6 +480,39 @@ const styles = StyleSheet.create({
     backgroundColor: Color.backGround,
     flexDirection: "row",
     flex: 1,
+  },
+  columnHeaderContainer: {
+    flexDirection: 'row',
+    paddingBottom: 10,
+  },
+  columnHeader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#DDDDDD',
+    padding: 10,
+  },
+  columnHeaderText: {
+    fontWeight: 'bold',
+  },
+  row: {
+    flexDirection: 'row',
+    paddingBottom: 10,
+  },
+  rowText: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#DDDDDD',
+  },
+  loadingMessage: {
+    textAlign: 'center',
+    marginTop: 10,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'black', // Adjust the color as needed
   },
 });
 
