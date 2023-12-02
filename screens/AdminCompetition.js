@@ -30,29 +30,26 @@ const AdminCompetition = () => {
   });
 
     const navigation = useNavigation();
+    
 
-    useEffect(() => {
-      const fetchCompetitionsData = async () => {
-        try {
-          const response = await fetch(`${BASE_URL}/competitions`);
-          const data = await response.json();
+    const fetchCompetitionsData = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/competitions`);
+        const data = await response.json();
 
-          if (data.error) {
-            setError(data.error);
-          } else {
-            console.log(data.competitions);
-            updateCompetitionsData(data.competitions); // Update the global variable
-          }
-          
-          console.log(data);
-
-        } catch (error) {
-          console.error('Error fetching data:', error);
+        if (data.error) {
+          setError(data.error);
+        } else {
+          console.log(data.competitions);
+          updateCompetitionsData(data.competitions); // Update the global variable
         }
-      };
-  
-      fetchCompetitionsData();
-    }, []);
+        
+        console.log(data);
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
 
     const renderColumnHeader = (header) => (
       <View style={styles.columnHeader}>
@@ -94,6 +91,10 @@ const AdminCompetition = () => {
       if (selectedRow) {
         // Set the current competition ID
         updateSelectedCompetitionId(selectedRow.competition_id);
+
+        window.alert(selectedRow.name + " has been set as the current competition");
+
+        console.log("Selected Competition ID: ", selectedCompetitionId);
         // Handle other actions if needed
       } else {
         // Display an alert if no competition is selected
@@ -112,22 +113,38 @@ const AdminCompetition = () => {
 
     const handleCreateCompetition = async () => {
       try {
+
+        console.log('Date:', textInputValues.date);
+        console.log('Games Per Team:', textInputValues.games_per_team);
+        console.log('Fields Per Division:', textInputValues.fields_per_division);
+
+        // Collect validation errors
+        const validationErrors = [];
+
         // Validate the date format
-        const isValidDate = moment(textInputValues.date, 'DD-MM-YYYY').isValid();
+        const isValidDate = moment(textInputValues.date, 'DD-MM-YYYY', true).isValid();
 
         if (!isValidDate) {
-          // Display an error message to the user
-          window.alert('Invalid date format. Please enter the date in the format DD-MM-YYYY.');
-          return;
+          validationErrors.push('Invalid date format. Please enter the date in the format DD-MM-YYYY.');
         }
+
 
         // Validate games_per_team and fields_per_division as numerical values
         const isGamesPerTeamNumeric = /^\d+$/.test(textInputValues.games_per_team);
         const isFieldsPerDivisionNumeric = /^\d+$/.test(textInputValues.fields_per_division);
 
-        if (!isGamesPerTeamNumeric || !isFieldsPerDivisionNumeric) {
-          // Display an error message to the user
-          window.alert('Please enter numerical values for Games Per Team and Fields Per Division.');
+        if (!isGamesPerTeamNumeric) {
+          validationErrors.push('Please enter a numerical value for Games Per Team.');
+        }
+        
+        if (!isFieldsPerDivisionNumeric) {
+          validationErrors.push('Please enter a numerical value for Fields Per Division.');
+        }
+
+        // Display a single message with all validation errors
+        if (validationErrors.length > 0) {
+          window.alert(validationErrors.join('\n'));
+          console.log(validationErrors.join('\n'));
           return;
         }
 
@@ -163,10 +180,16 @@ const AdminCompetition = () => {
             {
               competition_id: newCompetitionId,
               name: data.name,
+              date: data.date,
               games_per_team: data.games_per_team,
               nbr_of_fields: data.nbr_of_fields,
             },
           ]);
+
+          // Refetch competitions data to get the updated list
+          await fetchCompetitionsData();
+
+          window.alert("The competition '" + textInputValues.name + "' has been created.");
 
             
           // Clear text input values
@@ -366,8 +389,8 @@ const AdminCompetition = () => {
                     styles.adminCompetitionDateTextFi,
                     styles.frame10SpaceBlock,
                   ]}
-                  value={textInputValues.games_per_team}
-                  onChangeText={(text) => setTextInputValues({ ...textInputValues, games_per_team: text })}
+                  value={textInputValues.date}
+                  onChangeText={(text) => setTextInputValues({ ...textInputValues, date: text })}
                   autoCapitalize="none"
                 />
                 <TextInput
@@ -375,10 +398,10 @@ const AdminCompetition = () => {
                     styles.adminCompetitionDateTextFi,
                     styles.frame10SpaceBlock,
                   ]}
-                  value={textInputValues.date}
-                  onChangeText={(text) => setTextInputValues({ ...textInputValues, date: text })}
+                  value={textInputValues.games_per_team}
+                  onChangeText={(text) => setTextInputValues({ ...textInputValues, games_per_team: text })}
                   autoCapitalize="none"
-                />
+                />                
                 <TextInput
                   style={[
                     styles.adminCompetitionDateTextFi,
