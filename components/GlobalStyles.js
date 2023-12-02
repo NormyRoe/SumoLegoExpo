@@ -83,7 +83,7 @@ export const DropDownPickerStyles = {
   },
   dropDownContainerStyle: {
     borderColor: "black",
-    zIndex: 3,
+    zIndex: 999,
   },
 };
 
