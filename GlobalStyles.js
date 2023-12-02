@@ -66,3 +66,24 @@ export const Border = {
   br_9xs: 4,
   br_8xs: 5,
 };
+
+
+export const DropDownPickerStyles = {
+  container: {
+    flex: 1,
+    zIndex: 2,
+  },
+  style: {
+    borderColor: "black",
+    borderRadius: 9,
+    zIndex: 3,
+  },
+  itemStyle: {
+    justifyContent: "flex-start",
+  },
+  dropDownContainerStyle: {
+    borderColor: "black",
+    zIndex: 999,
+  },
+};
+
