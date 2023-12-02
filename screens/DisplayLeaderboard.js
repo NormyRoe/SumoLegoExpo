@@ -63,7 +63,7 @@ const DisplayLeaderboard = () => {
       console.error("Error fetching data:", error.message);
     } finally {
       setLoading(false);
-      setMessage("Data retrieved, please select a tab...");
+      setMessage("Data retrieved, please select a division...");
     }
   };
 
