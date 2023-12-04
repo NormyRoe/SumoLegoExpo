@@ -16,6 +16,7 @@ const AdminSchools = () => {
     useState(false);
   const [adminSchoolsStateDropdownValue, setAdminSchoolsStateDropdownValue] =
     useState();
+  const [adminSchoolsPaidDropdownItems, setAdminSchoolsPaidDropdownItems] = useState([]);
   
     const [responseData, setResponseData] = useState(null);
     const [selectedRow, setSelectedRow] = useState(null);
@@ -41,6 +42,8 @@ const AdminSchools = () => {
           updateSchoolsData(data.schools);
           console.log(data.schools);
           console.log(schoolsData);
+          const paidValues = Array.from(new Set(data.schools.map((school) => school.paid)));
+          setAdminSchoolsPaidDropdownItems(paidValues);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -328,14 +331,10 @@ const AdminSchools = () => {
                               open={adminSchoolsPaidDropdownOpen}
                               setOpen={setAdminSchoolsPaidDropdownOpen}
                               value={adminSchoolsPaidDropdownValue}
-                              setValue={(value) => {
-                                // Update the selected competition ID when an item is selected
-                                setPaidDropdownValue(value);
-                                updateSelectedPaidId(value);
-                              }}
-                              items={schoolsData.map((school) => ({
-                                label: `${school.paid}`,
-                                value: school.school_id.toString(),
+                              setValue={(value) => setAdminSchoolsPaidDropdownValue(value)}
+                              items={adminSchoolsPaidDropdownItems.map((value) => ({
+                                label: value === '1' ? 'Yes' : 'No',
+                                value: value,
                               }))}
                               dropDownContainerStyle={
                                 styles.adminSchoolsPaidDropdowndropDownContainer
@@ -467,11 +466,14 @@ const styles = StyleSheet.create({
     borderColor: "#000",
     borderWidth: 1,
     flexbasis: "fit-content",
+    flex: 1,
+    zIndex: 10,
   },
   adminSchoolsStateDropdowndropDownContainer: {
     borderStyle: "solid",
     borderColor: "#000",
     borderWidth: 1,
+    zIndex: 10,
   },
   image1Icon: {
     position: "relative",
@@ -721,6 +723,7 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     borderColor: Color.colorBlack,
     borderWidth: 1,
+    zIndex: 5,
   },
   adminSchoolsContactNameTex: {
     alignSelf: "stretch",
@@ -737,16 +740,21 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     borderColor: Color.colorBlack,
     borderWidth: 1,
-    height: 10,
+    flex: 1,
+    flexBasis: "fit-content",
+    overflow: "visible",
+    zIndex: 10,
+    zIndex: 999,
   },
   adminSchoolsPaidDropdown: {
   alignSelf: "stretch",
   borderRadius: Border.br_5xs,
   borderStyle: "solid",
-  overflow: "hidden",
+  overflow: "visible",
   flexDirection: "column",
   alignItems: "center",
   justifyContent: "flex-start",
+  zIndex: 999,
   },
   frame16: {
     alignSelf: "stretch",
@@ -797,7 +805,7 @@ const styles = StyleSheet.create({
   frame18: {
     alignSelf: "stretch",
     flex: 1,
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "flex-start",
@@ -817,7 +825,7 @@ const styles = StyleSheet.create({
   frame9: {
     alignSelf: "stretch",
     flex: 1,
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "column",
     alignItems: "flex-start",
     justifyContent: "center",
@@ -847,24 +855,25 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: Padding.p_4xs,
     paddingVertical: Padding.p_0,
+    zIndex: 0,
   },
   frame23: {
     alignSelf: "stretch",
     height: 27,
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "space-between",
   },
   frame22: {
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "column",
     alignItems: "flex-start",
     justifyContent: "flex-start",
   },
   frame21: {
     flex: 1,
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -887,7 +896,7 @@ const styles = StyleSheet.create({
   },
   frame20: {
     alignSelf: "stretch",
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -895,11 +904,12 @@ const styles = StyleSheet.create({
   frame19: {
     alignSelf: "stretch",
     height: 26,
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     marginTop: 1,
+    zIndex: 0,
   },
   adminSchoolsSchoolTeamsBut: {
     flex: 1,
@@ -939,7 +949,7 @@ const styles = StyleSheet.create({
   },
   frame26: {
     alignSelf: "stretch",
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
@@ -948,16 +958,17 @@ const styles = StyleSheet.create({
   frame25: {
     alignSelf: "stretch",
     height: 35,
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "column",
     alignItems: "flex-end",
     justifyContent: "center",
     marginTop: 1,
+    zIndex: 0,
   },
   frame8: {
     alignSelf: "stretch",
     flex: 1,
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
@@ -965,7 +976,7 @@ const styles = StyleSheet.create({
   },
   frame1: {
     alignSelf: "stretch",
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "flex-start",
@@ -976,7 +987,7 @@ const styles = StyleSheet.create({
     top: -2,
     left: 225,
     width: 598,
-    overflow: "hidden",
+    overflow: "visible",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "flex-end",

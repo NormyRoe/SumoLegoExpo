@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Image } from "expo-image";
 import {
   StyleSheet,
@@ -7,6 +7,7 @@ import {
   View,
   FlatList,
   TextInput,
+  TouchableOpacity,
 } from "react-native";
 import Row111 from "../components/Row111";
 import Row10 from "../components/Row10";
@@ -15,7 +16,8 @@ import Row8 from "../components/Row8";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontFamily, FontSize, Padding } from "../GlobalStyles";
-import { updateSelectedUserId, updateUsersData } from "../GlobalVariables";
+import * as Crypto from 'expo-crypto';
+import { BASE_URL, accessRole, selectedUserId, updateSelectedUserId, updateUsersData, usersData } from "../GlobalVariables";
 
 const AdminNonAdminUser = () => {
   const [
@@ -23,15 +25,17 @@ const AdminNonAdminUser = () => {
     setAdminNonAdminUserTableFlatListData,
   ] = useState([<Row111 />, <Row10 />, <Row9 />, <Row8 />]);
 
-  const [selectedRow, setSelectedRow] = useState(null);
+  const [filteredUser, setFilteredUser] = useState([]);
+  const [selectedRow, setSelectedRow] = useState([]);
   const [textInputValues, setTextInputValues] = useState({
-    name: '',
-    games_per_team: '',
-    date: '',
-    fields_per_division: '',
+    username: '',
+    password: '',
+    reTypePassword: '',
+    role: '',
   });
 
   const navigation = useNavigation();
+
 
   useEffect(() => {
     const fetchUsersData = async () => {
@@ -45,7 +49,8 @@ const AdminNonAdminUser = () => {
           console.log(data.users);
           updateUsersData(data.users); // Update the global variable
 
-          const filteredUser = usersData.filter((user) => user.role != "Admin");
+          const nonAdminUsers = usersData.filter((user) => user.role != "Admin");
+          setFilteredUser(nonAdminUsers);
           console.log("The filtered array of users: ", filteredUser)
         }
         
@@ -75,10 +80,13 @@ const AdminNonAdminUser = () => {
   // Populate text input values with the selected row's data
   setTextInputValues({
     username: item.username,
+    password: '',
+    reTypePassword: '',
+    role: '',
   });
 
   // Handle the row press, navigate to a new screen, etc.
-  console.log('Row pressed:', item.name);
+  console.log('Row pressed:', item.username);
 };
 
 const renderRow = ({ item }) => (
@@ -89,6 +97,90 @@ const renderRow = ({ item }) => (
     </View>
   </TouchableOpacity>
 );
+
+const handleUserDelete = async () => {
+  try{
+    const response = await fetch(`${BASE_URL}/users/${selectedUserId}`, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        access_role: accessRole,
+      }),
+    });
+    
+    const data = await response.json();
+
+    if (data.error) {
+      window.alert(data.error);
+    } else {
+      window.alert(data);
+    }
+  } catch (error) {
+    window.alert(error);
+  }
+}
+
+const handleUserUpdate = async () => {
+  try{
+    console.log('This is the password that ways typed in:', textInputValues.password);
+    console.log('This is the retyped password that ways typed in:', textInputValues.reTypePassword);
+    console.log('This is the role of the selected user:', textInputValues.role);
+
+    let hashed_password = '';
+    if (textInputValues.password === textInputValues.reTypePassword){
+
+      // Hash the password using SHA256
+      hashed_password = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, textInputValues.password);
+
+    } else {
+      window.alert('Your passwords do not match.')
+    }
+
+
+    const response = await fetch(`${BASE_URL}/users/${selectedUserId}`, {
+      method: 'PATCH',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        access_role: accessRole,
+        first_name: '',
+        surname: '',
+        email_address: '',
+        username: textInputValues.username,
+        password: hashed_password,
+        role: textInputValues.role,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      window.alert(data.error);
+      console.log(data.error);
+    } else {
+      console.log(data);
+      window.alert(data.message);
+      handleClearFields;
+    }
+
+  } catch (error) {
+    console.log(error);
+    window.alert(error);
+  }
+}
+
+const handleClearFields = () => {
+  // Clear all text input values
+  setTextInputValues({
+    username: '',
+    password: '',
+    reTypePassword: '',
+  })};
 
   return (
     <LinearGradient
@@ -204,9 +296,7 @@ const renderRow = ({ item }) => (
                 }
                 ListHeaderComponent={() => (
                   <View style={styles.columnHeaderContainer}>
-                    {renderColumnHeader('Name')}
-                    {renderColumnHeader('Games Per Team')}
-                    {renderColumnHeader('Date')}
+                    {renderColumnHeader('Username')}
                     {/* Add any other headers you want */}
                   </View>
                   )}
@@ -239,6 +329,8 @@ const renderRow = ({ item }) => (
                   <TextInput
                     style={styles.adminNonAdminUserUsername}
                     autoCapitalize="none"
+                    value={textInputValues.password}
+                    onChangeText={(text) => setTextInputValues({ ...textInputValues, password: text })}
                   />
                 </View>
                 <View style={[styles.frame8, styles.frameFlexBox]}>
@@ -248,6 +340,8 @@ const renderRow = ({ item }) => (
                   <TextInput
                     style={styles.adminNonAdminUserUsername}
                     autoCapitalize="none"
+                    value={textInputValues.reTypePassword}
+                    onChangeText={(text) => setTextInputValues({ ...textInputValues, reTypePassword: text })}
                   />
                 </View>
               </View>
@@ -260,6 +354,7 @@ const renderRow = ({ item }) => (
                       styles.adminNonAdminUserUpdateBu,
                       styles.adminBorder,
                     ]}
+                    onPress={handleUserUpdate}
                   >
                     <Text style={[styles.update, styles.updateTypo]}>
                       Update
@@ -270,6 +365,7 @@ const renderRow = ({ item }) => (
                       styles.adminNonAdminUserDeleteBu,
                       styles.adminBorder,
                     ]}
+                    onPress={handleUserDelete}
                   >
                     <Text style={[styles.update, styles.updateTypo]}>
                       Delete
@@ -520,6 +616,36 @@ const styles = StyleSheet.create({
     backgroundColor: Color.backGround,
     flexDirection: "row",
     flex: 1,
+  },
+
+  columnHeaderContainer: {
+    flexDirection: 'row',
+    paddingBottom: 10,
+  },
+  columnHeader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#DDDDDD',
+    padding: 10,
+  },
+  columnHeaderText: {
+    fontWeight: 'bold',
+  },
+  row: {
+    flexDirection: 'row',
+    paddingBottom: 10,
+  },
+  rowText: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#DDDDDD',
+  },
+  selectedRow: {
+    backgroundColor: 'blue', // Adjust the color as needed
   },
 });
 

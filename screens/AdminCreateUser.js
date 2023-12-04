@@ -1,17 +1,93 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Image } from "expo-image";
 import { StyleSheet, Pressable, Text, View, TextInput } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { LinearGradient } from "expo-linear-gradient";
+import * as Crypto from 'expo-crypto';
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontFamily, FontSize, Padding } from "../GlobalStyles";
+import { BASE_URL, accessRole, selectedUserId, usersData, userName, updateUsersData, updateSelectedUserId } from "../GlobalVariables";
+
 
 const AdminCreateUser = () => {
   const [adminCreateUserRoleDropdowOpen, setAdminCreateUserRoleDropdowOpen] =
     useState(false);
   const [adminCreateUserRoleDropdowValue, setAdminCreateUserRoleDropdowValue] =
     useState();
+  const [textInputValues, setTextInputValues] = useState({
+      first_name: '',
+      surname: '',
+      email_address: '',
+      username: '',
+      password: '',
+      reTypePassword: '',
+  });
+
+
   const navigation = useNavigation();
+  
+
+  const handleCreateUser = async () => {
+    try{
+      console.log('This is the password that ways typed in:', textInputValues.password);
+      console.log('This is the retyped password that ways typed in:', textInputValues.reTypePassword);
+      console.log('This is the role of the selected user:', textInputValues.role);
+  
+      let hashed_password = '';
+      if (textInputValues.password === textInputValues.reTypePassword){
+  
+        // Hash the password using SHA256
+        hashed_password = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, textInputValues.password);
+  
+      } else {
+        window.alert('Your passwords do not match.')
+      }
+  
+  
+      const response = await fetch(`${BASE_URL}/users`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          access_role: accessRole,
+          first_name: textInputValues.first_name,
+          surname: textInputValues.surname,
+          email_address: textInputValues.email_address,
+          username: textInputValues.username,
+          password: hashed_password,
+          role: adminCreateUserRoleDropdowValue,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (data.error) {
+        window.alert(data.error);
+        console.log(data.error);
+      } else {
+        console.log(data);
+        window.alert(data.message);
+        handleClearFields;
+      }
+  
+    } catch (error) {
+      console.log(error);
+      window.alert(error);
+    }
+  }
+
+  const handleClearFields = () => {
+    // Clear all text input values
+    setTextInputValues({
+      first_name: '',
+      surname: '',
+      email_address: '',
+      username: '',
+      password: '',
+      reTypePassword: '',
+    })};
 
   return (
     <LinearGradient
@@ -95,12 +171,15 @@ const AdminCreateUser = () => {
                   <Text style={styles.userRole}>User Role:</Text>
                   <View style={styles.adminCreateUserRoleDropdow}>
                     <DropDownPicker
-                      style={styles.adminMenuBorder}
+                      style={styles.adminMenuBorderDropdown}
                       open={adminCreateUserRoleDropdowOpen}
                       setOpen={setAdminCreateUserRoleDropdowOpen}
                       value={adminCreateUserRoleDropdowValue}
                       setValue={setAdminCreateUserRoleDropdowValue}
-                      items={[]}
+                      items={[
+                        { label: 'Admin', value: 'Admin' },
+                        { label: 'Judge', value: 'Judge' },
+                      ]}
                       dropDownContainerStyle={
                         styles.adminCreateUserRoleDropdowdropDownContainer
                       }
@@ -127,6 +206,13 @@ const AdminCreateUser = () => {
                         styles.adminBorder,
                       ]}
                       autoCapitalize="none"
+                      value={textInputValues.first_name}
+                      onChangeText={(text) =>
+                        setTextInputValues((prevValues) => ({
+                        ...prevValues,
+                        first_name: text,
+                        }))
+                      }
                     />
                   </View>
                 </View>
@@ -144,6 +230,13 @@ const AdminCreateUser = () => {
                           styles.adminBorder2,
                         ]}
                         autoCapitalize="none"
+                        value={textInputValues.surname}
+                        onChangeText={(text) =>
+                          setTextInputValues((prevValues) => ({
+                          ...prevValues,
+                          surname: text,
+                          }))
+                        }
                       />
                     </View>
                   </View>
@@ -152,11 +245,19 @@ const AdminCreateUser = () => {
                       <Text style={[styles.firstName, styles.usernameTypo]}>
                         Email:
                       </Text>
-                      <View
+                      <TextInput
                         style={[
                           styles.adminCreateUserLastNameTe,
                           styles.adminBorder2,
                         ]}
+                        autoCapitalize="none"
+                        value={textInputValues.email_address}
+                        onChangeText={(text) =>
+                          setTextInputValues((prevValues) => ({
+                          ...prevValues,
+                          email_address: text,
+                          }))
+                        }
                       />
                     </View>
                   </View>
@@ -173,6 +274,13 @@ const AdminCreateUser = () => {
                           styles.adminBorder,
                         ]}
                         autoCapitalize="none"
+                        value={textInputValues.username}
+                        onChangeText={(text) =>
+                          setTextInputValues((prevValues) => ({
+                          ...prevValues,
+                          username: text,
+                          }))
+                        }
                       />
                     </View>
                   </View>
@@ -187,6 +295,13 @@ const AdminCreateUser = () => {
                           styles.adminBorder2,
                         ]}
                         autoCapitalize="none"
+                        value={textInputValues.password}
+                        onChangeText={(text) =>
+                          setTextInputValues((prevValues) => ({
+                          ...prevValues,
+                          password: text,
+                          }))
+                        }
                       />
                     </View>
                   </View>
@@ -203,6 +318,13 @@ const AdminCreateUser = () => {
                           styles.adminBorder2,
                         ]}
                         autoCapitalize="none"
+                        value={textInputValues.reTypePassword}
+                        onChangeText={(text) =>
+                          setTextInputValues((prevValues) => ({
+                          ...prevValues,
+                          reTypePassword: text,
+                          }))
+                        }
                       />
                     </View>
                   </View>
@@ -212,6 +334,7 @@ const AdminCreateUser = () => {
                         styles.adminCreateUserCreateButto,
                         styles.adminBorder2,
                       ]}
+                      onPress={handleCreateUser}
                     >
                       <Text style={[styles.create, styles.createFlexBox]}>
                         Create
@@ -233,11 +356,18 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     borderColor: "#000",
     borderWidth: 1,
+    flexBasis: 'auto',
   },
   adminMenuBorder: {
     borderWidth: 1,
     borderColor: Color.colorBlack,
     borderStyle: "solid",
+  },
+  adminMenuBorderDropdown: {
+    borderWidth: 1,
+    borderColor: Color.colorBlack,
+    borderStyle: "solid",
+    fontSize: 5,
   },
   adminBorder1: {
     height: 30,
@@ -252,12 +382,12 @@ const styles = StyleSheet.create({
   },
   frameFlexBox: {
     alignSelf: "stretch",
-    overflow: "hidden",
+    overflow: "visible",
   },
   frameSpaceBlock: {
     marginTop: 10,
     alignSelf: "stretch",
-    overflow: "hidden",
+    overflow: "visible",
   },
   createFlexBox: {
     textAlign: "center",
@@ -338,24 +468,25 @@ const styles = StyleSheet.create({
   },
   adminCreateUserRoleDropdow: {
     borderRadius: Border.br_5xs,
-    height: 18,
     marginLeft: 16,
-    overflow: "hidden",
+    marginBottom: 30,
+    overflow: "visible",
     borderStyle: "solid",
     justifyContent: "center",
     alignItems: "center",
-    flex: 1,
+    height: 50,
   },
   frame4: {
     paddingBottom: 0,
     alignItems: "center",
     flexDirection: "row",
+    flex: 1,
   },
   frame3: {
     justifyContent: "center",
   },
   frame2: {
-    height: 82,
+    height: 40,
     alignItems: "center",
   },
   userDetails: {
@@ -385,6 +516,7 @@ const styles = StyleSheet.create({
   frame6: {
     justifyContent: "center",
     alignItems: "center",
+    flex: 1,
   },
   adminCreateUserLastNameTe: {
     height: 14,
@@ -433,7 +565,7 @@ const styles = StyleSheet.create({
   },
   frame5: {
     width: 365,
-    marginTop: 23,
+    marginTop: 50,
     overflow: "hidden",
   },
   frame1: {

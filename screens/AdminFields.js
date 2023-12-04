@@ -20,17 +20,14 @@ import { Color, Border, FontFamily, FontSize, Padding } from "../GlobalStyles";
 import { BASE_URL, divisionsData, fieldsData, updateDivisionsData, updateFieldsData, updateSelectedFieldId } from "../GlobalVariables";
 
 const AdminFields = () => {
-const [adminFieldDropdownFrameOpen, setAdminFieldDropdownFrameOpen] =
-  useState(false);
-  console.log("hi 1");
-const [adminFieldDropdownFrameValue, setAdminFieldDropdownFrameValue] =
-  useState();
-  console.log("hi 2");
-    const [selectedRow, setSelectedRow] = useState(null);
-    const [textInputValues, setTextInputValues] = useState({
-      name: '',
-    });
-    console.log("hi3");
+  const [adminFieldDropdownFrameOpen, setAdminFieldDropdownFrameOpen] =
+    useState(false);
+  const [adminFieldDropdownFrameValue, setAdminFieldDropdownFrameValue] =
+    useState();
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [textInputValues, setTextInputValues] = useState({
+    name: '',
+  });
 
   const navigation = useNavigation();
 
@@ -41,13 +38,10 @@ const [adminFieldDropdownFrameValue, setAdminFieldDropdownFrameValue] =
       try {
         const response = await fetch(`${BASE_URL}/fields`);
         const data = await response.json();
-        console.log("hi 4");
         if (data.error) {
           setError(data.error);
-          console.log("hi 5");
         } else {
           updateFieldsData(data.fields);
-          console.log("hi 6");
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -67,18 +61,20 @@ const [adminFieldDropdownFrameValue, setAdminFieldDropdownFrameValue] =
   );
 
   const handleRowPress = (item) => {
-      // Update the selected row
-  setSelectedRow(item);
+    console.log(adminFieldDropdownFrameValue);
 
-  // Set the selected competition ID
-  updateSelectedFieldId(item.field_id);
+    // Update the selected row
+    setSelectedRow(item);
 
-  // Populate text input values with the selected row's data
-  setTextInputValues({
-    name: item.name,
-    division: item.division,
-    judge: item.judge,
-  });
+    // Set the selected competition ID
+    updateSelectedFieldId(item.field_id);
+
+    // Populate text input values with the selected row's data
+    setTextInputValues({
+      name: item.name,
+      division: item.division,
+      judge: item.judge,
+    });
 
     // Handle the row press, navigate to a new screen, etc.
     console.log('Row pressed:', item.name);
@@ -95,7 +91,21 @@ const [adminFieldDropdownFrameValue, setAdminFieldDropdownFrameValue] =
     </TouchableOpacity>
   );
 
-
+    const handleFieldName = async () => {
+      console.log("The handleFieldName is getting called:");
+      console.log("THis is the dropdown value:", adminFieldDropdownFrameValue);
+      const movies = fieldsData.filter(item => item.division === adminFieldDropdownFrameValue);
+      console.log("This is the filtered list of division names", movies);
+      const moviesCount = movies.length;
+      console.log("This is the length of the list:", moviesCount);
+      const newJudgeNumber = moviesCount + 1;
+      console.log("This is the number of the new judge account", newJudgeNumber);
+      const newJudgeUsername = adminFieldDropdownFrameValue + ' ' + newJudgeNumber;
+      console.log("This is the new Judge account username:", newJudgeUsername);
+      setTextInputValues({
+        name: newJudgeUsername,
+      });
+    }
 
 
   return (
@@ -233,26 +243,21 @@ const [adminFieldDropdownFrameValue, setAdminFieldDropdownFrameValue] =
             </View>
             <View style={[styles.adminFieldDropdownFrame, styles.frameFlexBox]}>
               <DropDownPicker
+                style={styles.adminMenuBorderDropdown}
                 open={adminFieldDropdownFrameOpen}
                 setOpen={setAdminFieldDropdownFrameOpen}
                 value={adminFieldDropdownFrameValue}
-                setValue={(value) => {
-                  // Update the selected field ID when an item is selected
-                  setAdminFieldDropdownFrameValue(value);
-                  updateSelectedFieldId(value);
-                  console.log("hi 11");
-                }}
-                
-                items={divisionsData?.map((division) => ({
-                  label: `${division.name}`,
-                  value: division.division_id.toString(),
-                }))}
-                
-                onChangeItem={(item) => {
-                  console.log("Selected Division: ", item.value);
-                  console.log("hi 10");
-                }}
-
+                setValue={setAdminFieldDropdownFrameValue}
+                items={[
+                  { label: 'Science', value: 'Science' },
+                  { label: 'Technology', value: 'Technology' },
+                  { label: 'Engineering', value: 'Engineering' },
+                  { label: 'Math', value: 'Math' },
+                ]}
+                dropDownContainerStyle={
+                  styles.adminDivisionDropdowdropDownContainer
+                }
+                onPress={handleFieldName}
               />
             </View>
             <View style={[styles.frame7, styles.frameFlexBox]}>
@@ -262,8 +267,13 @@ const [adminFieldDropdownFrameValue, setAdminFieldDropdownFrameValue] =
                 </Text>
                 <TextInput
                   style={[styles.adminFieldNameTextField, styles.adminBorder1]}
-                  value={selectedRow ? selectedRow.name : ''}
-                  onChangeText={(text) => setTextInputValues({ ...textInputValues, name: text })}
+                  value={textInputValues.name}
+                      onChangeText={(text) =>
+                        setTextInputValues((prevValues) => ({
+                        ...prevValues,
+                        name: text,
+                        }))
+                      }
                 />
               </View>
             </View>
@@ -284,6 +294,21 @@ const [adminFieldDropdownFrameValue, setAdminFieldDropdownFrameValue] =
 };
 
 const styles = StyleSheet.create({
+  adminDivisionDropdowdropDownContainer: {
+    borderStyle: "solid",
+    borderColor: "#000",
+    borderWidth: 1,
+    flexBasis: 'auto',
+    overflow: "scroll",
+  },
+  adminMenuBorderDropdown: {
+    borderWidth: 1,
+    borderColor: Color.colorBlack,
+    borderStyle: "solid",
+    fontSize: 5,
+    overflow: "scroll",
+    maxHeight: 200,
+  },
   adminFieldTableFlatListContent: {
     flexDirection: "column",
   },
@@ -314,13 +339,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: Color.colorBlack,
     alignSelf: "stretch",
-  },
-  frameFlexBox: {
-    marginTop: 5,
-    justifyContent: "center",
-    alignSelf: "stretch",
-    overflow: "hidden",
-    alignItems: "center",
   },
   fieldTypo: {
     fontSize: FontSize.size_xs,
@@ -430,7 +448,7 @@ const styles = StyleSheet.create({
   frame5: {
     height: 22,
     alignSelf: "stretch",
-    overflow: "hidden",
+    overflow: "visible",
     alignItems: "center",
   },
   addFieldTo: {
@@ -443,7 +461,14 @@ const styles = StyleSheet.create({
     height: 25,
   },
   adminFieldDropdownFrame: {
-    flex: 1,
+    height: 100,
+    overflow: "scroll",
+  },
+  frameFlexBox: {
+    marginTop: 5,
+    justifyContent: "flex-start",
+    alignSelf: "stretch",
+    alignItems: "center",
   },
   fieldNameWill: {
     lineHeight: 16,
@@ -481,7 +506,7 @@ const styles = StyleSheet.create({
   },
   frame4: {
     marginTop: 7,
-    overflow: "hidden",
+    overflow: "visible",
   },
   frame: {
     marginLeft: 16,
@@ -520,7 +545,7 @@ const styles = StyleSheet.create({
     width: 575,
     maxWidth: 575,
     alignSelf: "stretch",
-    overflow: "hidden",
+    overflow: "visible",
     borderWidth: 1,
     borderStyle: "solid",
     flex: 1,
@@ -528,7 +553,7 @@ const styles = StyleSheet.create({
   adminBorder2: {
     borderWidth: 1,
     borderStyle: "solid",
-    overflow: "hidden",
+    overflow: "visible",
   },
   adminCompetitionTableFlatListContent: {
     flexDirection: "column",

@@ -18,7 +18,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { CheckBox } from 'react-native-elements';
 import { Color, Border, Padding, FontFamily, FontSize } from "../GlobalStyles";
-import { BASE_URL, accessRole, selectedCompetitionId, selectedTeamId, teamsData, updateSelectedDivisionId, updateSelectedTeamId, updateTeamsData } from "../GlobalVariables";
+import { BASE_URL, accessRole, selectedCompetitionId, selectedDivisionId, selectedTeamId, teamsData, updateSelectedDivisionId, updateSelectedTeamId, updateTeamsData } from "../GlobalVariables";
 
 const AdminTeamCheckIn = () => {
   const [selectedRow, setSelectedRow] = useState(null);
@@ -31,7 +31,6 @@ const AdminTeamCheckIn = () => {
 
   const [isLoading, setIsLoading] = useState(true);
 
-  console.log(selectedCompetitionId);
 
   useEffect(() => {
     const fetchTeamData = async () => {
@@ -62,46 +61,47 @@ const AdminTeamCheckIn = () => {
   );
 
   const handleRowPress = (item) => {
+    
+    setChecked(false);
+      
     // Update the selected row
-  setSelectedRow(item);
+    setSelectedRow(item);
 
-  // Set the selected team ID
-  updateSelectedTeamId(item.team_id);
+    // Set the selected team ID
+    updateSelectedTeamId(item.team_id);
 
-  let selectedDivision_id = '';
-  if (item.division === "Science"){
-    selectedDivision_id = '1';
-    updateSelectedDivisionId(selectedDivision_id);
-    console.log(selectedDivision_id);
-  }
-  else if (item.division === "Technology"){
-    selectedDivision_id = '2';
-    updateSelectedDivisionId(selectedDivision_id);
-    console.log(selectedDivision_id);
-  }
-  else if (item.division === "Engineering"){
-    selectedDivision_id = '3';
-    updateSelectedDivisionId(selectedDivision_id);
-    console.log(selectedDivision_id);
-  }
-  else if (item.division === "Math"){
-    selectedDivision_id = '4';
-    updateSelectedDivisionId(selectedDivision_id);
-    console.log(selectedDivision_id);
-  }
-  console.log(selectedCompetitionId);
+    let selectedDivision_id = 0;
 
-  updateSelectedDivisionId()
+    if (item.division === "Science"){
+      selectedDivision_id = 1;
+      updateSelectedDivisionId(selectedDivision_id);
+      console.log('Selected division id should be 1:', selectedDivision_id);
+    }
+    else if (item.division === "Technology"){
+      selectedDivision_id = 2;
+      updateSelectedDivisionId(selectedDivision_id);
+      console.log('Selected division id should be 2:', selectedDivision_id);
+    }
+    else if (item.division === "Engineering"){
+      selectedDivision_id = 3;
+      updateSelectedDivisionId(selectedDivision_id);
+      console.log('Selected division id should be 3:', selectedDivision_id);
+    }
+    else if (item.division === "Math"){
+      selectedDivision_id = 4;
+      updateSelectedDivisionId(selectedDivision_id);
+      console.log('Selected division id should be 4:', selectedDivision_id);
+    }
 
-  // Populate text input values with the selected row's data
-  setTextInputValues({
-    name: item.name,
-    school: item.school,
-    date: item.date,
-  });
+    // Populate text input values with the selected row's data
+    setTextInputValues({
+      name: item.name,
+      school: item.school,
+      date: item.date,
+    });
 
-  // Handle the row press, navigate to a new screen, etc.
-  console.log('Row pressed:', item.name);
+    // Handle the row press, navigate to a new screen, etc.
+    console.log('Row pressed:', item.name);
   };
 
 const renderRow = ({ item }) => (
@@ -109,24 +109,28 @@ const renderRow = ({ item }) => (
     <View style={styles.row}>
       <Text style={[styles.rowText, { color: 'white' }]}>{item.name}</Text>
       <Text style={[styles.rowText, { color: 'white' }]}>{item.school}</Text>
-      <Text style={[styles.rowText, { color: 'white' }]}>{item.date}</Text>
+      <Text style={[styles.rowText, { color: 'white' }]}>{item.division}</Text>
       {/* Add any other fields you want to display */}
     </View>
   </TouchableOpacity>
 );
 
 
-const handleTeamCheckIn = async (selectedDivision_id) => {
+const handleTeamCheckIn = async () => {
   try{
 
-    let teamCheckedIn = '';
+    let teamCheckedIn = 0;
     if (isChecked == false){
-        teamCheckedIn = '0';
+        teamCheckedIn = 0;
     } 
     else if (isChecked == true) {
-        teamCheckedIn = '1';
+        teamCheckedIn = 1;
     }
   
+    console.log('This is the access role:', accessRole);
+    console.log('This is the selected division id:', selectedDivisionId);
+    console.log('This is the selected team id:', selectedTeamId);
+    console.log('This is the team check in value:', teamCheckedIn);
 
 
     const response = await fetch(`${BASE_URL}/checkin/${selectedCompetitionId}`, {
@@ -137,7 +141,7 @@ const handleTeamCheckIn = async (selectedDivision_id) => {
       },
       body: JSON.stringify({
         access_role: accessRole,
-        division_id: selectedDivision_id,
+        division_id: selectedDivisionId,
         team_id: selectedTeamId,
         checked_in: teamCheckedIn,
       }),
@@ -149,7 +153,8 @@ const handleTeamCheckIn = async (selectedDivision_id) => {
       console.log(data.error);
       window.alert(data.error);
     } else {
-      const teamCheckedIn = data.Checked_In_id;
+      console.log(data);
+      window.alert(data.message);
 
     }
   } catch (error) {
@@ -157,6 +162,47 @@ const handleTeamCheckIn = async (selectedDivision_id) => {
     window.alert(error);
   }
 };
+
+const handleGenerateDraw = async () => {
+
+  console.log(selectedCompetitionId);
+  console.log(BASE_URL);
+  console.log(JSON.stringify({
+    access_role: accessRole
+  }))
+
+  try{
+    const response = await fetch(`${BASE_URL}/draw/${selectedCompetitionId}`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        access_role: accessRole,
+      }),
+    });
+
+    const textData = await response.text(); // Get the raw text response
+    console.log('Server Response:', textData);
+
+    //const data = await response.json();
+    //console.log('Server Response:', data);
+
+    if (data.error){
+      console.log(data.error);
+      window.alert(data.error);
+    } else {
+      console.log(data);
+      window.alert(data.message);
+
+    }
+  } catch (error) {
+    console.log(error);
+    window.alert(error);
+  }
+
+}
 
 
 
@@ -277,8 +323,8 @@ const handleTeamCheckIn = async (selectedDivision_id) => {
                   ListHeaderComponent={() => (
                     <View style={styles.columnHeaderContainer}>
                       {renderColumnHeader('Name')}
-                      {renderColumnHeader('Games Per Team')}
-                      {renderColumnHeader('Date')}
+                      {renderColumnHeader('School')}
+                      {renderColumnHeader('Division')}
                       {/* Add any other headers you want */}
                     </View>
                   )}
@@ -340,6 +386,7 @@ const handleTeamCheckIn = async (selectedDivision_id) => {
                         styles.adminTeamCheckinGenerateDr,
                         styles.adminBorder,
                       ]}
+                      onPress={handleGenerateDraw}
                     >
                       <Text style={[styles.submit, styles.submitTypo]}>
                         Generate Draw

@@ -3,8 +3,9 @@ import { Image } from "expo-image";
 import { StyleSheet, Pressable, Text, View, TextInput } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
+import * as Crypto from 'expo-crypto';
 import { Color, Border, Padding, FontSize, FontFamily } from "../GlobalStyles";
-import { BASE_URL, usersData, userusername, updateTeamsData, updateUsersData } from "../GlobalVariables";
+import { BASE_URL, accessRole, selectedUserId, usersData, userName, updateUsersData, updateSelectedUserId } from "../GlobalVariables";
 
 const AdminCurrentUser = () => {
 
@@ -14,6 +15,9 @@ const AdminCurrentUser = () => {
     surname: '',
     email_address: '',
     username: '',
+    password: '',
+    reTypePassword: '',
+    role: '',
   });
 
   const navigation = useNavigation();
@@ -32,10 +36,17 @@ const AdminCurrentUser = () => {
           updateUsersData(data.users); // Update the global variable
           console.log(usersData);
 
-          const filteredUser = usersData.filter((user) => user.username == userusername);
-          console.log(filteredUser);
+          const filteredUser = usersData.filter((user) => user.username === userName);
+          console.log('This is the array of the current user:', filteredUser);
+          console.log('This is the username stored in the username global variable', userName);
+          console.log('This is tha username from the filtered user array:', filteredUser.username);
+
+          const user = filteredUser[0];
+          handleInputFields(user);
+
+          updateSelectedUserId(user.user_id);
+
           
-          handleInputFields(filteredUser);
 
         }
       } catch (error) {
@@ -50,15 +61,79 @@ const AdminCurrentUser = () => {
 
   }, []); // Empty dependency array ensures this effect runs only once on component mount
 
-const handleInputFields = async (filteredUser) => {
+const handleInputFields = async (user) => {
   // Populate text input values with the selected row's data
   setTextInputValues({
-    first_name: filteredUser.first_name,
-    surname: filteredUser.surname,
-    email_address: filteredUser.email_address,
-    username: filteredUser.username,
+    first_name: user.first_name,
+    surname: user.surname,
+    email_address: user.email_address,
+    username: user.username,
+    password: '',
+    reTypePassword: '',
+    role: '',
   });
 }
+
+const handleUserUpdate = async () => {
+  try{
+    console.log('This is the password that ways typed in:', textInputValues.password);
+    console.log('This is the retyped password that ways typed in:', textInputValues.reTypePassword);
+    console.log('This is the role of the selected user:', textInputValues.role);
+
+    let hashed_password = '';
+    if (textInputValues.password === textInputValues.reTypePassword){
+
+      // Hash the password using SHA256
+      hashed_password = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, textInputValues.password);
+
+    } else {
+      window.alert('Your passwords do not match.')
+    }
+
+
+    const response = await fetch(`${BASE_URL}/users/${selectedUserId}`, {
+      method: 'PATCH',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        access_role: accessRole,
+        first_name: textInputValues.first_name,
+        surname: textInputValues.surname,
+        email_address: textInputValues.email_address,
+        username: textInputValues.username,
+        password: hashed_password,
+        role: textInputValues.role,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      window.alert(data.error);
+      console.log(data.error);
+    } else {
+      console.log(data);
+      window.alert(data.message);
+      handleClearFields();
+    }
+
+  } catch (error) {
+    console.log(error);
+    window.alert(error);
+  }
+}
+
+const handleClearFields = () => {
+  // Clear all text input values
+  setTextInputValues((prevValues) => ({
+    ...prevValues,
+    password: '',
+    reTypePassword: '',
+  }));
+  console.log('The handleClearFields function is being called')
+};
 
 
   return (
@@ -230,10 +305,11 @@ const handleInputFields = async (filteredUser) => {
                 <TextInput
                   style={styles.adminCurrentUserFirstName}
                   autoCapitalize="none"
+                  value={textInputValues.password}
                   onChangeText={(text) =>
                     setTextInputValues((prevValues) => ({
                     ...prevValues,
-                    email_address: text,
+                    password: text,
                     }))
                   }
                 />
@@ -245,10 +321,11 @@ const handleInputFields = async (filteredUser) => {
                 <TextInput
                   style={styles.adminCurrentUserFirstName}
                   autoCapitalize="none"
+                  value={textInputValues.reTypePassword}
                   onChangeText={(text) =>
                     setTextInputValues((prevValues) => ({
                     ...prevValues,
-                    email_address: text,
+                    reTypePassword: text,
                     }))
                   }
                 />
@@ -261,6 +338,7 @@ const handleInputFields = async (filteredUser) => {
                     styles.adminCurrentUserUpdateButt,
                     styles.adminBorder,
                   ]}
+                  onPress={handleUserUpdate}
                 >
                   <Text style={[styles.update, styles.backTypo]}>Update</Text>
                 </Pressable>
@@ -269,19 +347,12 @@ const handleInputFields = async (filteredUser) => {
                     styles.adminCurrentUserDeleteButt,
                     styles.adminBorder,
                   ]}
+                  onPress={() => navigation.navigate("AdminUpdateUser")}
                 >
-                  <Text style={[styles.update, styles.backTypo]}>Delete</Text>
+                  <Text style={[styles.update, styles.backTypo]}>Back</Text>
                 </Pressable>
               </View>
             </View>
-          </View>
-          <View style={[styles.frame18, styles.frameSpaceBlock]}>
-            <Pressable
-              style={[styles.adminCurrentUserBackButton, styles.adminBorder]}
-              onPress={() => navigation.navigate("AdminUpdateUser")}
-            >
-              <Text style={styles.backTypo}>Back</Text>
-            </Pressable>
           </View>
         </View>
       </View>
