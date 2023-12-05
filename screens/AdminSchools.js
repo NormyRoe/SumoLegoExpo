@@ -5,7 +5,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { FontSize, FontFamily, Color, Border, Padding } from "../GlobalStyles";
-import { BASE_URL, schoolsData, updateSchoolsData } from "../GlobalVariables";
+import { BASE_URL, schoolsData, updateSchoolsData, selectedCompetitionId, accessRole } from "../GlobalVariables";
 
 const AdminSchools = () => {
   const [adminSchoolsPaidDropdownOpen, setAdminSchoolsPaidDropdownOpen] =
@@ -42,8 +42,6 @@ const AdminSchools = () => {
           updateSchoolsData(data.schools);
           console.log(data.schools);
           console.log(schoolsData);
-          const paidValues = Array.from(new Set(data.schools.map((school) => school.paid)));
-          setAdminSchoolsPaidDropdownItems(paidValues);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -66,6 +64,11 @@ const AdminSchools = () => {
   const handleRowPress = async (item) => {
       // Update the selected row
   setSelectedRow(item);
+  console.log(selectedRow);
+
+  setAdminSchoolsStateDropdownValue(item.state);
+
+  setAdminSchoolsPaidDropdownValue(item.paid);
 
   // Populate text input values with the selected row's data
   setTextInputValues({
@@ -73,7 +76,6 @@ const AdminSchools = () => {
     street_address_line_1: item.street_address_line_1,
     street_address_line_2: item.street_address_line_2,
     suburb: item.suburb,
-    state: item.state,
     postcode: item.postcode,
     contact_name: item.contact_name,
     contact_number: item.contact_number,
@@ -82,44 +84,49 @@ const AdminSchools = () => {
 
     // Handle the row press, navigate to a new screen, etc.
     console.log('Row pressed:', item.name);
+    console.log('The value in the state dropdown:', item.state);
   };
 
-  const createNewSchool = async () => {
-    try {
-      const apiUrl = 'http://10.211.55.7:8000/schools'; // Update with your API endpoint
+  const handleCreateSchool = async () => {
+    try{
   
-      const requestBody = {
-        access_role: 'Admin',
-        name: textInputValues.name,
-        street_address_line_1: textInputValues.street_address_line_1,
-        street_address_line_2: textInputValues.street_address_line_2,
-        suburb: textInputValues.suburb,
-        state: textInputValues.state,
-        postcode: textInputValues.postcode,
-        contact_name: textInputValues.contact_name,
-        contact_number: textInputValues.contact_number,
-        email_address: textInputValues.email_address,
-        paid: '0', // You may want to update this field based on your requirements
-      };
-      const response = await fetch(apiUrl, {
+      const response = await fetch(`${BASE_URL}/schools`, {
         method: 'POST',
         headers: {
+          'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({
+          access_role: accessRole,
+          name: textInputValues.name,
+          street_address_line_1: textInputValues.street_address_line_1,
+          street_address_line_2: textInputValues.street_address_line_2,
+          suburb: textInputValues.suburb,
+          state: adminSchoolsStateDropdownValue,
+          postcode: textInputValues.postcode,
+          contact_name: textInputValues.contact_name,
+          contact_number: textInputValues.contact_number,
+          email_address: textInputValues.email_address,
+          paid: adminSchoolsPaidDropdownValue, 
+        }),
       });
-      if (response.ok) {
-        const responseData = await response.json();
-        console.log('New school created:', responseData);
   
-        // Optionally, you can update the state or perform other actions after a successful creation
+      const data = await response.json();
+  
+      if (data.error) {
+        window.alert(data.error);
+        console.log(data.error);
       } else {
-        console.error('Error creating new school:', response.status, response.statusText);
+        console.log(data);
+        window.alert(data.message);
+        handleClearFields;
       }
+  
     } catch (error) {
-      console.error('Error creating new school:', error);
+      console.log(error);
+      window.alert(error);
     }
-  };
+  }
 
   const renderRow = ({ item }) => (
     <TouchableOpacity onPress={() => handleRowPress(item)}>
@@ -146,6 +153,47 @@ const AdminSchools = () => {
       contact_number: '',
     });
   };
+
+  const handleSchoolUpdate = async () => {
+    try{
+
+      const response = await fetch(`${BASE_URL}/schools/${selectedCompetitionId}`, {
+        method: 'PATCH',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          access_role: accessRole,
+          name: textInputValues.name,
+          street_address_line_1: textInputValues.street_address_line_1,
+          street_address_line_2: textInputValues.street_address_line_2,
+          suburb: textInputValues.suburb,
+          state: adminSchoolsStateDropdownValue,
+          postcode: textInputValues.postcode,
+          contact_name: textInputValues.contact_name,
+          contact_number: textInputValues.contact_number,
+          email_address: textInputValues.email_address,
+          paid: adminSchoolsPaidDropdownValue, 
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (data.error) {
+        window.alert(data.error);
+        console.log(data.error);
+      } else {
+        console.log(data);
+        window.alert(data.message);
+        handleClearFields;
+      }
+  
+    } catch (error) {
+      console.log(error);
+      window.alert(error);
+    }
+  }
 
   return (
     <LinearGradient
@@ -331,11 +379,11 @@ const AdminSchools = () => {
                               open={adminSchoolsPaidDropdownOpen}
                               setOpen={setAdminSchoolsPaidDropdownOpen}
                               value={adminSchoolsPaidDropdownValue}
-                              setValue={(value) => setAdminSchoolsPaidDropdownValue(value)}
-                              items={adminSchoolsPaidDropdownItems.map((value) => ({
-                                label: value === '1' ? 'Yes' : 'No',
-                                value: value,
-                              }))}
+                              setValue={setAdminSchoolsPaidDropdownValue}
+                              items={[
+                                { label: 'Yes', value: 1 },
+                                { label: 'No', value: 0 },
+                              ]}
                               dropDownContainerStyle={
                                 styles.adminSchoolsPaidDropdowndropDownContainer
                               }
@@ -397,7 +445,16 @@ const AdminSchools = () => {
                         setOpen={setAdminSchoolsStateDropdownOpen}
                         value={adminSchoolsStateDropdownValue}
                         setValue={setAdminSchoolsStateDropdownValue}
-                        items={[]}
+                        items={[
+                          { label: 'QLD', value: 'QLD' },
+                          { label: 'NSW', value: 'NSW' },
+                          { label: 'ACT', value: 'ACT' },
+                          { label: 'VIC', value: 'VIC' },
+                          { label: 'TAS', value: 'TAS' },
+                          { label: 'SA', value: 'SA' },
+                          { label: 'NT', value: 'NT' },
+                          { label: 'WA', value: 'WA' },
+                        ]}
                         dropDownContainerStyle={
                           styles.adminSchoolsStateDropdowndropDownContainer
                         }
@@ -423,7 +480,7 @@ const AdminSchools = () => {
                     <View style={styles.frame22}>
                       <View style={styles.frame23}>
                         <Pressable style={styles.adminSchoolsCreateButton}
-                        onPress={createNewSchool}
+                        onPress={handleCreateSchool}
                         >
                           <Text style={styles.create}>Create</Text>
                         </Pressable>
@@ -431,7 +488,10 @@ const AdminSchools = () => {
                     </View>
                   </View>
                   <View style={styles.frame10}>
-                    <Pressable style={styles.adminSchoolsUpdateButton}>
+                    <Pressable 
+                    style={styles.adminSchoolsUpdateButton}
+                    onPress={handleSchoolUpdate}
+                    >
                       <Text style={styles.create}>Update</Text>
                     </Pressable>
                   </View>
@@ -742,7 +802,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flex: 1,
     flexBasis: "fit-content",
-    overflow: "visible",
+    overflow: "scroll",
     zIndex: 10,
     zIndex: 999,
   },

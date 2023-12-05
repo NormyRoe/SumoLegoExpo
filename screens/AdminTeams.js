@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ImageBackground,
   StyleSheet,
@@ -7,6 +7,7 @@ import {
   View,
   FlatList,
   TextInput,
+  TouchableOpacity,
 } from "react-native";
 import Row23 from "../components/Row23";
 import Row22 from "../components/Row22";
@@ -16,6 +17,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Padding, Color, Border, FontFamily, FontSize } from "../GlobalStyles";
+import { BASE_URL, teamsData, updateTeamsData, updateSelectedTeamId, updateSelectedDivisionId} from "../GlobalVariables";
 
 const AdminTeams = () => {
   const [adminTeamsTableFlatListData, setAdminTeamsTableFlatListData] =
@@ -24,7 +26,93 @@ const AdminTeams = () => {
     useState(false);
   const [adminTeamsDivisionDropdownValue, setAdminTeamsDivisionDropdownValue] =
     useState();
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [textInputValues, setTextInputValues] = useState({
+    name: '',
+  });
   const navigation = useNavigation();
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTeamData = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/teams`);
+        const data = await response.json();
+
+        if (data.error) {
+          setError(data.error);
+        } else {
+          updateTeamsData(data.teams); // Update the global variable
+        }
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTeamData();
+  }, []);
+
+  const renderColumnHeader = (header) => (
+    <View style={styles.columnHeader}>
+      <Text style={styles.columnHeaderText}>{header}</Text>
+    </View>
+  );
+
+  const handleRowPress = (item) => {
+    
+      
+    // Update the selected row
+    setSelectedRow(item);
+
+    // Set the selected team ID
+    updateSelectedTeamId(item.team_id);
+
+    let selectedDivision_id = 0;
+
+    if (item.division === "Science"){
+      selectedDivision_id = 1;
+      updateSelectedDivisionId(selectedDivision_id);
+      console.log('Selected division id should be 1:', selectedDivision_id);
+    }
+    else if (item.division === "Technology"){
+      selectedDivision_id = 2;
+      updateSelectedDivisionId(selectedDivision_id);
+      console.log('Selected division id should be 2:', selectedDivision_id);
+    }
+    else if (item.division === "Engineering"){
+      selectedDivision_id = 3;
+      updateSelectedDivisionId(selectedDivision_id);
+      console.log('Selected division id should be 3:', selectedDivision_id);
+    }
+    else if (item.division === "Math"){
+      selectedDivision_id = 4;
+      updateSelectedDivisionId(selectedDivision_id);
+      console.log('Selected division id should be 4:', selectedDivision_id);
+    }
+
+    // Populate text input values with the selected row's data
+    setTextInputValues({
+      name: item.name,
+    });
+
+    // Handle the row press, navigate to a new screen, etc.
+    console.log('Row pressed:', item.name);
+  };
+
+  const renderRow = ({ item }) => (
+    <TouchableOpacity onPress={() => handleRowPress(item)}>
+      <View style={styles.row}>
+        <Text style={[styles.rowText, { color: 'white' }]}>{item.name}</Text>
+        <Text style={[styles.rowText, { color: 'white' }]}>{item.school}</Text>
+        <Text style={[styles.rowText, { color: 'white' }]}>{item.division}</Text>
+        {/* Add any other fields you want to display */}
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <LinearGradient
@@ -126,9 +214,19 @@ const AdminTeams = () => {
             <View style={styles.adminTeamsTableFrame}>
               <FlatList
                 style={[styles.adminTeamsTable, styles.adminBorder3]}
-                data={adminTeamsTableFlatListData}
-                renderItem={({ item }) => item}
+                data={teamsData}
+                renderItem={renderRow}
+                keyExtractor={(item) => item.team_id.toString()}
                 contentContainerStyle={styles.adminTeamsTableFlatListContent}
+
+                ListHeaderComponent={() => (
+                  <View style={styles.columnHeaderContainer}>
+                    {renderColumnHeader('Name')}
+                    {renderColumnHeader('School')}
+                    {renderColumnHeader('Division')}
+                    {/* Add any wother headers you want */}
+                  </View>
+                )}
               />
             </View>
           </View>
@@ -147,6 +245,13 @@ const AdminTeams = () => {
                   <TextInput
                     style={styles.adminTeamsNameTextBox}
                     autoCapitalize="none"
+                    value={textInputValues.name}
+                            onChangeText={(text) =>
+                            setTextInputValues((prevValues) => ({
+                            ...prevValues,
+                            name: text,
+                            }))
+                          }
                   />
                 </View>
               </View>
@@ -171,7 +276,12 @@ const AdminTeams = () => {
                       setOpen={setAdminTeamsDivisionDropdownOpen}
                       value={adminTeamsDivisionDropdownValue}
                       setValue={setAdminTeamsDivisionDropdownValue}
-                      items={[]}
+                      items={[
+                        { label: 'Science', value: '1'},
+                        { label: 'Technology', value: '2'},
+                        { label: 'Engineering', value: '3'},
+                        { label: 'Math', value: '4'},
+                      ]}
                       dropDownContainerStyle={
                         styles.adminTeamsDivisionDropdowndropDownContainer
                       }
@@ -516,6 +626,36 @@ const styles = StyleSheet.create({
     paddingVertical: Padding.p_5xs,
     backgroundColor: Color.backGround,
     flexDirection: "row",
+  },
+
+  columnHeaderContainer: {
+    flexDirection: 'row',
+    paddingBottom: 10,
+  },
+  columnHeader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#DDDDDD',
+    padding: 10,
+  },
+  columnHeaderText: {
+    fontWeight: 'bold',
+  },
+  row: {
+    flexDirection: 'row',
+    paddingBottom: 10,
+  },
+  rowText: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#DDDDDD',
+  },
+  selectedRow: {
+    backgroundColor: 'blue', // Adjust the color as needed
   },
 });
 

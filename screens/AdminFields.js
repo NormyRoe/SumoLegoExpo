@@ -15,9 +15,10 @@ import Row17 from "../components/Row17";
 import Row16 from "../components/Row16";
 import DropDownPicker from "react-native-dropdown-picker";
 import { LinearGradient } from "expo-linear-gradient";
+import * as Crypto from 'expo-crypto';
 import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontFamily, FontSize, Padding } from "../GlobalStyles";
-import { BASE_URL, divisionsData, fieldsData, updateDivisionsData, updateFieldsData, updateSelectedFieldId } from "../GlobalVariables";
+import { BASE_URL, divisionsData, fieldsData, selectedDivisionId, updateDivisionsData, updateFieldsData, updateSelectedDivisionId, updateSelectedFieldId, accessRole } from "../GlobalVariables";
 
 const AdminFields = () => {
   const [adminFieldDropdownFrameOpen, setAdminFieldDropdownFrameOpen] =
@@ -91,21 +92,90 @@ const AdminFields = () => {
     </TouchableOpacity>
   );
 
-    const handleFieldName = async () => {
-      console.log("The handleFieldName is getting called:");
-      console.log("THis is the dropdown value:", adminFieldDropdownFrameValue);
-      const movies = fieldsData.filter(item => item.division === adminFieldDropdownFrameValue);
-      console.log("This is the filtered list of division names", movies);
-      const moviesCount = movies.length;
-      console.log("This is the length of the list:", moviesCount);
-      const newJudgeNumber = moviesCount + 1;
-      console.log("This is the number of the new judge account", newJudgeNumber);
-      const newJudgeUsername = adminFieldDropdownFrameValue + ' ' + newJudgeNumber;
-      console.log("This is the new Judge account username:", newJudgeUsername);
-      setTextInputValues({
-        name: newJudgeUsername,
+  const handleFieldName = async () => {
+    console.log("The handleFieldName is getting called:");
+    console.log("THis is the dropdown value:", adminFieldDropdownFrameValue);
+    const movies = fieldsData.filter(item => item.division === adminFieldDropdownFrameValue);
+    console.log("This is the filtered list of division names", movies);
+    const moviesCount = movies.length;
+    console.log("This is the length of the list:", moviesCount);
+    const newJudgeNumber = moviesCount + 1;
+    console.log("This is the number of the new judge account", newJudgeNumber);
+    const newJudgeUsername = adminFieldDropdownFrameValue + ' ' + newJudgeNumber;
+    console.log("This is the new Judge account username:", newJudgeUsername);
+    setTextInputValues({
+      name: newJudgeUsername,
+    });
+  }
+
+  const handleCreateFieldJudge = async (item) => {
+    try{
+      let hashed_password = '';
+  
+      // Hash the password using SHA256
+      hashed_password = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, 'sumo');
+      
+      let selectedDivision_id = 0;
+
+
+      if (adminFieldDropdownFrameValue === "Science"){
+        selectedDivision_id = 1;
+        updateSelectedDivisionId(selectedDivision_id);
+        console.log('Selected division id should be 1:', selectedDivision_id);
+      }
+      else if (adminFieldDropdownFrameValue === "Technology"){
+        selectedDivision_id = 2;
+        updateSelectedDivisionId(selectedDivision_id);
+        console.log('Selected division id should be 2:', selectedDivision_id);
+      }
+      else if (adminFieldDropdownFrameValue === "Engineering"){
+        selectedDivision_id = 3;
+        updateSelectedDivisionId(selectedDivision_id);
+        console.log('Selected division id should be 3:', selectedDivision_id);
+      }
+      else if (adminFieldDropdownFrameValue === "Math"){
+        selectedDivision_id = 4;
+        updateSelectedDivisionId(selectedDivision_id);
+        console.log('Selected division id should be 4:', selectedDivision_id);
+      }
+  
+      const response = await fetch(`${BASE_URL}/fields`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          access_role: accessRole,
+          name: textInputValues.name,
+          division_id: selectedDivisionId,
+          password: hashed_password,
+          role: "Judge",
+        }),
       });
+  
+      const data = await response.json();
+  
+      if (data.error) {
+        window.alert(data.error);
+        console.log(data.error);
+      } else {
+        console.log(data);
+        window.alert(data.message);
+        handleClearFields;
+      }
+  
+    } catch (error) {
+      console.log(error);
+      window.alert(error);
     }
+  }
+
+  const handleClearFields = () => {
+    // Clear all text input values
+    setTextInputValues({
+      name: '',
+    })};
 
 
   return (
@@ -280,6 +350,7 @@ const AdminFields = () => {
             <View style={styles.frameFlexBox}>
               <Pressable
                 style={[styles.adminFieldCreateButton, styles.adminBorder1]}
+                onPress={handleCreateFieldJudge}
               >
                 <Text style={[styles.createFieldAnd, styles.fieldTypo1]}>
                   Create field and judge
