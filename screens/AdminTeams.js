@@ -17,7 +17,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Padding, Color, Border, FontFamily, FontSize } from "../GlobalStyles";
-import { BASE_URL, teamsData, updateTeamsData, updateSelectedTeamId, updateSelectedDivisionId} from "../GlobalVariables";
+import { BASE_URL, teamsData, updateTeamsData, updateSelectedTeamId, updateSelectedDivisionId, selectedSchoolId, accessRole} from "../GlobalVariables";
 
 const AdminTeams = () => {
   const [adminTeamsTableFlatListData, setAdminTeamsTableFlatListData] =
@@ -37,7 +37,7 @@ const AdminTeams = () => {
   useEffect(() => {
     const fetchTeamData = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/teams`);
+        const response = await fetch(`${BASE_URL}/teams/school/${selectedSchoolId}`);
         const data = await response.json();
 
         if (data.error) {
@@ -71,28 +71,30 @@ const AdminTeams = () => {
     // Set the selected team ID
     updateSelectedTeamId(item.team_id);
 
-    let selectedDivision_id = 0;
+    let selectedDivision_id = '0';
 
     if (item.division === "Science"){
-      selectedDivision_id = 1;
+      selectedDivision_id = '1';
       updateSelectedDivisionId(selectedDivision_id);
       console.log('Selected division id should be 1:', selectedDivision_id);
     }
     else if (item.division === "Technology"){
-      selectedDivision_id = 2;
+      selectedDivision_id = '2';
       updateSelectedDivisionId(selectedDivision_id);
       console.log('Selected division id should be 2:', selectedDivision_id);
     }
     else if (item.division === "Engineering"){
-      selectedDivision_id = 3;
+      selectedDivision_id = '3';
       updateSelectedDivisionId(selectedDivision_id);
       console.log('Selected division id should be 3:', selectedDivision_id);
     }
     else if (item.division === "Math"){
-      selectedDivision_id = 4;
+      selectedDivision_id = '4';
       updateSelectedDivisionId(selectedDivision_id);
       console.log('Selected division id should be 4:', selectedDivision_id);
     }
+
+    setAdminTeamsDivisionDropdownValue(selectedDivision_id);
 
     // Populate text input values with the selected row's data
     setTextInputValues({
@@ -113,6 +115,79 @@ const AdminTeams = () => {
       </View>
     </TouchableOpacity>
   );
+
+  const handleClearFields = () => {
+    // Clear all text input values
+    setTextInputValues({
+      name: '',
+    });
+    setAdminTeamsDivisionDropdownValue('');
+  };
+
+  const handleSchoolUpdate = async () => {
+    try{
+
+      const response = await fetch(`${BASE_URL}/teams/${selectedSchoolId}`, {
+        method: 'PATCH',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          access_role: accessRole,
+          name: textInputValues.name,
+          division_id: adminTeamsDivisionDropdownValue,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (data.error) {
+        window.alert(data.error);
+        console.log(data.error);
+      } else {
+        console.log(data);
+        window.alert(data.message);
+      }
+  
+    } catch (error) {
+      console.log(error);
+      window.alert(error);
+    }
+  }
+
+  const handleCreateTeam = async () => {
+    try{
+  
+      const response = await fetch(`${BASE_URL}/teams/school/${selectedSchoolId}`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          access_role: accessRole,
+          name: textInputValues.name,
+          division_id: adminTeamsDivisionDropdownValue,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (data.error) {
+        window.alert(data.error);
+        console.log(data.error);
+      } else {
+        console.log(data);
+        window.alert(data.message);
+        handleClearFields;
+      }
+  
+    } catch (error) {
+      console.log(error);
+      window.alert(error);
+    }
+  }
 
   return (
     <LinearGradient
@@ -298,6 +373,7 @@ const AdminTeams = () => {
                           styles.adminTeamsBackButton,
                           styles.adminBorder1,
                         ]}
+                        onPress={() => navigation.navigate("AdminSchools")}
                       >
                         <Text style={[styles.back, styles.backTypo]}>Back</Text>
                       </Pressable>
@@ -306,6 +382,7 @@ const AdminTeams = () => {
                           styles.adminTeamsCreateButton,
                           styles.adminBorder,
                         ]}
+                        onPress={handleCreateTeam}
                       >
                         <Text style={[styles.back, styles.backTypo]}>
                           Create
@@ -317,6 +394,7 @@ const AdminTeams = () => {
                         styles.adminTeamsUpdateButton,
                         styles.adminBorder,
                       ]}
+                      onPress={handleSchoolUpdate}
                     >
                       <Text style={[styles.back, styles.backTypo]}>Update</Text>
                     </Pressable>
@@ -326,6 +404,7 @@ const AdminTeams = () => {
                       styles.adminTeamsClearFieldsButto,
                       styles.adminBorder1,
                     ]}
+                    onPress={handleClearFields}
                   >
                     <Text style={[styles.clearFields, styles.backTypo]}>
                       Clear Fields
@@ -349,6 +428,8 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     borderColor: "#000",
     borderWidth: 1,
+    height: 60,
+    overflow: "scroll",
   },
   adminSpaceBlock: {
     paddingHorizontal: Padding.p_mini,
@@ -360,7 +441,7 @@ const styles = StyleSheet.create({
   },
   frameFlexBox1: {
     alignItems: "center",
-    overflow: "hidden",
+    overflow: "visible",
   },
   backFlexBox: {
     display: "flex",
@@ -396,7 +477,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
     alignItems: "center",
     alignSelf: "stretch",
-    overflow: "hidden",
+    overflow: "visible",
   },
   adminBorder1: {
     paddingVertical: Padding.p_0,
@@ -548,20 +629,24 @@ const styles = StyleSheet.create({
   dropdownpicker: {
     borderColor: Color.colorBlack,
     borderWidth: 1,
+    overflow: "visible",
   },
   adminTeamsDivisionDropdown: {
     borderRadius: Border.br_5xs,
-    height: 23,
+    height: 50,
     justifyContent: "center",
     alignSelf: "stretch",
     borderStyle: "solid",
     alignItems: "center",
+    overflow: "visible",
   },
   frame12: {
     justifyContent: "center",
+    height: 50,
+    overflow: "visible",
   },
   frame10: {
-    height: 48,
+    height: 150,
     alignSelf: "stretch",
   },
   back: {

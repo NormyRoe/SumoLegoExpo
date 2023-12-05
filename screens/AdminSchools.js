@@ -5,7 +5,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { FontSize, FontFamily, Color, Border, Padding } from "../GlobalStyles";
-import { BASE_URL, schoolsData, updateSchoolsData, selectedCompetitionId, accessRole } from "../GlobalVariables";
+import { BASE_URL, schoolsData, updateSchoolsData, selectedCompetitionId, accessRole, updateSelectedSchoolId } from "../GlobalVariables";
 
 const AdminSchools = () => {
   const [adminSchoolsPaidDropdownOpen, setAdminSchoolsPaidDropdownOpen] =
@@ -29,6 +29,8 @@ const AdminSchools = () => {
     const navigation = useNavigation();
 
     const [isLoading, setIsLoading] = useState(true);
+
+    const [teamsButton, setTeamsButton] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,6 +67,10 @@ const AdminSchools = () => {
       // Update the selected row
   setSelectedRow(item);
   console.log(selectedRow);
+
+  setTeamsButton(false);
+
+  updateSelectedSchoolId(item.school_id);
 
   setAdminSchoolsStateDropdownValue(item.state);
 
@@ -152,6 +158,7 @@ const AdminSchools = () => {
       contact_name: '',
       contact_number: '',
     });
+    setTeamsButton(true);
   };
 
   const handleSchoolUpdate = async () => {
@@ -502,6 +509,7 @@ const AdminSchools = () => {
                   <Pressable
                     style={styles.adminSchoolsSchoolTeamsBut}
                     onPress={() => navigation.navigate("AdminTeams")}
+                    disabled={teamsButton}
                   >
                     <Text style={styles.create}>School Teams</Text>
                   </Pressable>
