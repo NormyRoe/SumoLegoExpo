@@ -76,6 +76,15 @@ const AdminGameDraw = () => {
       if (error) {
         console.error("Server Error:", error);
       } else {
+
+        // Sorting logic
+        Game_Results.sort((a, b) => {
+          if (a.start_time === b.start_time) {
+            return a.round - b.round; // Compare round as numbers
+          }
+          return a.start_time.localeCompare(b.start_time);
+        });
+        
         updateGameResultsData(Game_Results);
         console.log("Game Results data:", gameResultsData);
         setAdminGameDrawTableFlatListData(Game_Results);
