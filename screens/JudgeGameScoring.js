@@ -1,10 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Text, StyleSheet, View, Pressable } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
-import { CheckBox } from "@rneui/themed";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
+import { CheckBox } from 'react-native-elements';
+import * as Crypto from 'expo-crypto';
 import { FontFamily, Border, Padding, Color, FontSize } from "../GlobalStyles";
+import { 
+  BASE_URL,
+  accessRole,
+  gameResultsData, 
+  selectedCompetitionId, 
+  updateGameResultsData,
+  updateDivisionsData,
+  divisionsData,
+  updateFieldsData,
+  fieldsData,
+  updateRoundsData,
+  roundsData,
+  updateSchoolsData,
+  schoolsData,
+} from "../GlobalVariables";
 
 const JudgeGameScoring = () => {
   const [judgeGameScoringDivisionDrOpen, setJudgeGameScoringDivisionDrOpen] =
@@ -35,7 +51,128 @@ const JudgeGameScoring = () => {
     judgeGameScoringBlueCheckb1checked,
     setJudgeGameScoringBlueCheckb1checked,
   ] = useState(false);
+
   const navigation = useNavigation();
+
+  const [redTeamName, setRedTeamName] = useState()
+  const [blueTeamName, setBlueTeamName] = useState()
+
+  const [nextredTeamName, setnextRedTeamName] = useState()
+  const [nextblueTeamName, setNextBlueTeamName] = useState()
+
+  const [selectedDivision, setSelectedDivision] = useState(null);
+  const [selectedField, setSelectedField] = useState(null);
+  const [selectedRound, setSelectedRound] = useState(null);
+
+  let redTeamPoints = 0;
+  let blueTeamPoints = 0;
+
+  const [gameid, setgameid] = useState(null);
+
+  let currentGameArrayNumber = 0;
+  let nextGameArrayNumber = 1;
+
+  useEffect(() => {
+    filterData();
+  }, [selectedDivision, selectedRound, selectedField, currentGameArrayNumber, gameid]);
+
+  const filterData = () => {
+    const filteredData = gameResultsData.filter((result) => result.division === judgeGameScoringDivisionDrValue && result.round === judgeGameScoringRoundDropdValue && result.field === judgeGameScoringFieldDropdValue);
+    
+    if (filteredData.length > 0 ){
+      console.log(judgeGameScoringFieldDropdValue);
+
+      console.log('Data Filtered:', filteredData);
+
+      setRedTeamName(filteredData[currentGameArrayNumber].team1);
+      setBlueTeamName(filteredData[currentGameArrayNumber].team2);
+
+      console.log(filteredData[currentGameArrayNumber].game_id);
+      setgameid(filteredData[currentGameArrayNumber].game_id);
+      
+      
+
+      console.log('This is the stelected team 1:', filteredData[currentGameArrayNumber].team1);
+      console.log('This is the selected team 2:', filteredData[currentGameArrayNumber].team2);
+      console.log(redTeamName);
+      console.log(blueTeamName);
+    }
+
+    
+  }
+
+  useEffect(() => {
+    handleCheckboxPoints();
+  }, [judgeGameScoringBlueCheckbchecked, judgeGameScoringBlueCheckb1checked, judgeGameScoringRedCheckbochecked, judgeGameScoringRedCheckbo1checked])
+
+  const handleCheckboxPoints = () => {
+    if (judgeGameScoringRedCheckbochecked === true && judgeGameScoringRedCheckbo1checked === true){
+      redTeamPoints = 1;
+      blueTeamPoints = 0;
+    }
+    else if (judgeGameScoringBlueCheckbchecked === true && judgeGameScoringBlueCheckb1checked === true){
+      blueTeamPoints = 1;
+      redTeamPoints = 0;
+    }
+  }
+
+  const handleScoringSubmit = async () => {
+      try{
+
+        const response = await fetch(`${BASE_URL}/gameresult/game/${gameid}`, {
+          method: 'PATCH',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            access_role: accessRole,
+            team1_points: redTeamPoints,
+            team2_points: blueTeamPoints,
+          }),
+        });
+    
+        const data = await response.json();
+    
+        if (data.error) {
+          window.alert(data.error);
+          console.log(data.error);
+        } else {
+          console.log(data);
+          window.alert(data.message);
+        }
+    
+      } catch (error) {
+        console.log(error);
+        window.alert(error);
+      }
+    }
+  const handleQueueNext = async () => {
+    currentGameArrayNumber + 1;
+    nextGameArrayNumber + 1;
+    handleClearFields;
+  }
+  
+
+  const handleClearFields = () => {
+    setJudgeGameScoringBlueCheckbchecked(false);
+    setJudgeGameScoringBlueCheckb1checked(false);
+    setJudgeGameScoringRedCheckbochecked(false);
+    setJudgeGameScoringRedCheckbo1checked(false);
+  };
+
+
+  const handleDivisionChange = (value) => {
+    setSelectedDivision(value);
+  };
+
+  const handleFieldChange = (value) => {
+    setSelectedField(value);
+  };
+
+  const handleRoundChange = (value) => {
+    setSelectedRound(value);
+  };
 
   return (
     <LinearGradient
@@ -62,12 +199,13 @@ const JudgeGameScoring = () => {
                 value={judgeGameScoringDivisionDrValue}
                 setValue={setJudgeGameScoringDivisionDrValue}
                 placeholder="Division"
-                items={[]}
+                items={divisionsData.map(division => ({ label: division, value: division }))}
                 labelStyle={styles.judgeGameScoringDivisionDrValue}
                 dropDownContainerStyle={
                   styles.judgeGameScoringDivisionDrdropDownContainer
                 }
-              />
+                onSelectItem={(item) => handleDivisionChange(item.value)}
+                />
             </View>
             <View
               style={[styles.judgeGameScoringRoundDropd, styles.judgeLayout]}
@@ -79,12 +217,13 @@ const JudgeGameScoring = () => {
                 value={judgeGameScoringRoundDropdValue}
                 setValue={setJudgeGameScoringRoundDropdValue}
                 placeholder="Round"
-                items={[]}
+                items={roundsData.map(round => ({ label: round.toString(), value: round }))}
                 labelStyle={styles.judgeGameScoringRoundDropdValue}
                 dropDownContainerStyle={
                   styles.judgeGameScoringRoundDropddropDownContainer
                 }
-              />
+                onSelectItem={(item) => handleRoundChange(item.value)}
+                />
             </View>
             <View
               style={[styles.judgeGameScoringRoundDropd, styles.judgeLayout]}
@@ -96,12 +235,13 @@ const JudgeGameScoring = () => {
                 value={judgeGameScoringFieldDropdValue}
                 setValue={setJudgeGameScoringFieldDropdValue}
                 placeholder="Field"
-                items={[]}
+                items={fieldsData.map(field => ({ label: field, value: field }))}
                 labelStyle={styles.judgeGameScoringFieldDropdValue}
                 dropDownContainerStyle={
                   styles.judgeGameScoringFieldDropddropDownContainer
                 }
-              />
+                onSelectItem={(item) => handleFieldChange(item.value)}
+                />
             </View>
           </View>
         </View>
@@ -120,7 +260,7 @@ const JudgeGameScoring = () => {
                 <Text
                   style={[styles.judgeGameScoringRedTeamNa, styles.teamTypo]}
                 >
-                  Team Name Label
+                  {redTeamName}
                 </Text>
                 <CheckBox
                   style={styles.judgeGameScoringRedCheckbo}
@@ -130,8 +270,11 @@ const JudgeGameScoring = () => {
                       !judgeGameScoringRedCheckbochecked
                     )
                   }
-                  checkedColor="#d9d9d9"
                   containerStyle={styles.judgeGameScoringRedCheckboLayout}
+                  iconType="material" // Set the icon type
+                  checkedIcon="check-box" // Specify the checked icon (tick)
+                  uncheckedIcon="check-box-outline-blank" // Specify the unchecked icon
+                  checkedColor="green"
                 />
                 <CheckBox
                   style={styles.judgeGameScoringRedCheckbo}
@@ -141,8 +284,11 @@ const JudgeGameScoring = () => {
                       !judgeGameScoringRedCheckbo1checked
                     )
                   }
-                  checkedColor="#d9d9d9"
                   containerStyle={styles.judgeGameScoringRedCheckbo1Layout}
+                  iconType="material" // Set the icon type
+                  checkedIcon="check-box" // Specify the checked icon (tick)
+                  uncheckedIcon="check-box-outline-blank" // Specify the unchecked icon
+                  checkedColor="green"
                 />
               </View>
               <Text
@@ -156,7 +302,7 @@ const JudgeGameScoring = () => {
                 style={[styles.judgeGameScoringWinnerFram, styles.judgeFlexBox]}
               >
                 <Text style={[styles.whichTeamHas, styles.teamTypo]}>
-                  Which team has won label
+                
                 </Text>
               </View>
               <View style={[styles.judgeGameScoringV, styles.judgeFlexBox]}>
@@ -176,7 +322,7 @@ const JudgeGameScoring = () => {
                 <Text
                   style={[styles.judgeGameScoringRedTeamNa, styles.teamTypo]}
                 >
-                  Team Name Label
+                  {blueTeamName}
                 </Text>
                 <CheckBox
                   style={styles.judgeGameScoringRedCheckbo}
@@ -186,8 +332,11 @@ const JudgeGameScoring = () => {
                       !judgeGameScoringBlueCheckbchecked
                     )
                   }
-                  checkedColor="#d9d9d9"
                   containerStyle={styles.judgeGameScoringBlueCheckbLayout}
+                  iconType="material" // Set the icon type
+                      checkedIcon="check-box" // Specify the checked icon (tick)
+                      uncheckedIcon="check-box-outline-blank" // Specify the unchecked icon
+                      checkedColor="green"
                 />
                 <CheckBox
                   style={styles.judgeGameScoringRedCheckbo}
@@ -197,14 +346,17 @@ const JudgeGameScoring = () => {
                       !judgeGameScoringBlueCheckb1checked
                     )
                   }
-                  checkedColor="#d9d9d9"
                   containerStyle={styles.judgeGameScoringBlueCheckb1Layout}
+                  iconType="material" // Set the icon type
+                      checkedIcon="check-box" // Specify the checked icon (tick)
+                      uncheckedIcon="check-box-outline-blank" // Specify the unchecked icon
+                      checkedColor="green"
                 />
               </View>
               <Text
                 style={[styles.judgeGameScoringRedTeamSc, styles.judgeTypo]}
               >
-                Team Current Score label
+                
               </Text>
             </View>
           </View>
@@ -217,6 +369,7 @@ const JudgeGameScoring = () => {
                       styles.judgeGameScoringSubmitButt,
                       styles.judgeBorder1,
                     ]}
+                    onPress={handleScoringSubmit}
                   >
                     <Text style={styles.submit}>Submit</Text>
                   </Pressable>
@@ -240,14 +393,14 @@ const JudgeGameScoring = () => {
                         styles.teamTypo,
                       ]}
                     >
-                      Team red name label
+                      {nextredTeamName}
                     </Text>
                   </View>
                   <Text style={[styles.v1, styles.gameTypo]}>V</Text>
                   <Text
                     style={[styles.judgeGameScoringNextGameB, styles.gameTypo]}
                   >
-                    Team blue name label
+                    {nextblueTeamName}
                   </Text>
                 </View>
               </View>
@@ -255,6 +408,7 @@ const JudgeGameScoring = () => {
             <View style={styles.frame9}>
               <Pressable
                 style={[styles.judgeGameScoringQueueNext, styles.judgeBorder]}
+                onPress={handleQueueNext}
               >
                 <Text style={styles.submit}>Queue Next</Text>
               </Pressable>
@@ -287,6 +441,8 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     borderColor: "#000",
     borderWidth: 1,
+    height: 60,
+    overflow: "scroll",
   },
   judgeGameScoringRoundDropdValue: {
     color: "#2b2b2b",
@@ -297,6 +453,8 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     borderColor: "#000",
     borderWidth: 1,
+    height: 60,
+    overflow: "scroll",
   },
   judgeGameScoringFieldDropdValue: {
     color: "#2b2b2b",
@@ -307,6 +465,8 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     borderColor: "#000",
     borderWidth: 1,
+    height: 60,
+    overflow: "scroll",
   },
   judgeGameScoringRedCheckboLayout: {
     backgroundColor: "transparent",
@@ -427,8 +587,9 @@ const styles = StyleSheet.create({
     marginTop: 5,
     overflow: "hidden",
     alignSelf: "stretch",
-    alignItems: "center",
+    alignItems: "flex-start",
     flexDirection: "row",
+    height: 150,
   },
   judgeGameScoringTitleDropd: {
     overflow: "hidden",
